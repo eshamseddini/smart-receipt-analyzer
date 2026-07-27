@@ -19,7 +19,9 @@ RUN if [ -f /usr/share/nginx/html/index.csr.html ]; then \
       cp /usr/share/nginx/html/index.csr.html /usr/share/nginx/html/index.html; \
     fi
 
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+COPY nginx.conf.template /etc/nginx/templates/default.conf.template
+
+ENV BACKEND_URL=http://backend:8000
 
 EXPOSE 80
 

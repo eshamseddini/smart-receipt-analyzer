@@ -1,0 +1,42 @@
+databases:
+  - name: smart-receipt-db
+    plan: free
+    databaseName: smart_receipt_db
+    user: smart_receipt
+
+services:
+  - type: web
+    name: smart-receipt-backend
+    runtime: docker
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    plan: free
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: smart-receipt-db
+          property: connectionString
+      - key: UPLOAD_DIR
+        value: uploads
+      - key: OCR_ENGINE
+        value: tesseract
+      - key: APP_ENV
+        value: production
+      - key: MAX_UPLOAD_SIZE_MB
+        value: "10"
+      - key: ALLOWED_ORIGINS
+        value: https://smart-receipt-frontend.onrender.com
+      - key: WEBHOOK_ENABLED
+        value: "false"
+      - key: WEBHOOK_URL
+        value: ""
+
+  - type: web
+    name: smart-receipt-frontend
+    runtime: docker
+    dockerfilePath: ./frontend/Dockerfile
+    dockerContext: ./frontend
+    plan: free
+    envVars:
+      - key: BACKEND_URL
+        value: https://smart-receipt-backend.onrender.com

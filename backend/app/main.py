@@ -8,6 +8,7 @@ from app.api.routes.receipts import router as receipts_router
 from app.db.database import engine, Base
 from app.models.receipt import Receipt
 from app.api.routes.analytics import router as analytics_router
+from app.core.config import settings
 
 
 Base.metadata.create_all(bind=engine)
@@ -15,21 +16,16 @@ Base.metadata.create_all(bind=engine)
 UPLOAD_DIR = Path("uploads")
 UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 
-allowed_origin = [
-    "http://localhost:4200",
-    "http://127.0.0.1:4200"
-]
-
 app = FastAPI(
     title="Smart Receipt Analyzer",
     description="A FastAPI application for analyzing receipts using OCR and AI models.",
     version="1.0.0",
 )
 app.add_middleware(CORSMiddleware,
-    allow_origins = allowed_origin,
+    allow_origins = settings.ALLOWED_ORIGINS,
     allow_credentials = True,
     allow_methods = ["*"],
-    allow_headers = ["*"]   
+    allow_headers = ["*"]
 )
 
 app.include_router(health_router, prefix="/api", tags=["Health"])
