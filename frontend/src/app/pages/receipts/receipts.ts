@@ -4,7 +4,7 @@ import { finalize } from 'rxjs';
 
 import { ReceiptListItem } from '../../core/models/receipt.model';
 import { ReceiptService } from '../../core/services/receipt.service';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { PageState } from '../../shared/components/page-state/page-state';
 import { ActionButton } from '../../shared/components/action-button/action-button';
 import { FormsModule } from '@angular/forms';
@@ -29,6 +29,10 @@ export class Receipts implements OnInit {
   selectedDocumentType = 'all';
   sortOrder: 'newest' | 'oldest' = 'newest';
 
+  pageSize = 10;
+  currentPage = 1;
+  totalReceipts = 0;
+
   selectedFile: File | null = null;
 
   showDeleteModal = false;
@@ -36,7 +40,8 @@ export class Receipts implements OnInit {
 
   constructor(
     private receiptService: ReceiptService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private router: Router
   ) {}
 
   ngOnInit(): void {
@@ -47,8 +52,10 @@ export class Receipts implements OnInit {
     this.loading = true;
     this.errorMessage = '';
 
+    const skip = (this.currentPage - 1) * this.pageSize;
+
     this.receiptService
-      .getReceipts()
+      .getReceipts(skip, this.pageSize)
       .pipe(
         finalize(() => {
           this.loading = false;
@@ -57,12 +64,34 @@ export class Receipts implements OnInit {
       )
       .subscribe({
         next: (data) => {
-          this.receipts = data;
+          this.receipts = data.items;
+          this.totalReceipts = data.total;
         },
         error: () => {
           this.errorMessage = 'Unable to load receipts.';
         },
       });
+  }
+
+  get totalPages(): number {
+    return Math.max(1, Math.ceil(this.totalReceipts / this.pageSize));
+  }
+
+  goToPage(page: number): void {
+    if (page < 1 || page > this.totalPages || page === this.currentPage) {
+      return;
+    }
+
+    this.currentPage = page;
+    this.loadReceipts();
+  }
+
+  previousPage(): void {
+    this.goToPage(this.currentPage - 1);
+  }
+
+  nextPage(): void {
+    this.goToPage(this.currentPage + 1);
   }
 
   onFileSelected(event: Event): void {
@@ -88,25 +117,33 @@ export class Receipts implements OnInit {
     this.errorMessage = '';
     this.successMessage = '';
 
-    this.receiptService
-      .uploadReceipt(this.selectedFile)
-      .pipe(
-        finalize(() => {
-          this.uploading = false;
-          this.cdr.detectChanges();
-        })
-      )
-      .subscribe({
-        next: () => {
-          this.selectedFile = null;
-          this.successMessage = 'Receipt uploaded successfully.';
-          this.loadReceipts();
-        },
-        error: () => {
-          this.errorMessage = 'Unable to upload receipt.';
-          this.loadReceipts();
-        },
-      });
+    this.receiptService.uploadReceipt(this.selectedFile).subscribe({
+      next: (response) => {
+        this.uploading = false;
+        this.errorMessage = '';
+        this.successMessage = 'Receipt uploaded and processed successfully.';
+
+        // adapte selon ton router actuel
+        this.router.navigate(['/receipts', response.receipt_id]);
+      },
+
+      error: (error) => {
+        this.uploading = false;
+        this.successMessage = '';
+
+        if (error.status === 422 && error.error?.detail?.message) {
+          this.errorMessage = error.error.detail.message;
+          return;
+        }
+
+        if (error.status === 400 && error.error?.detail) {
+          this.errorMessage = error.error.detail;
+          return;
+        }
+
+        this.errorMessage = 'An unexpected error occurred while uploading the file.';
+      },
+    });
   }
 
   get filteredReceipts(): ReceiptListItem[] {
@@ -141,18 +178,17 @@ export class Receipts implements OnInit {
   }
 
   get resultsLabel(): string {
-    const total = this.receipts.length;
     const shown = this.filteredReceipts.length;
 
-    if (total === 0) {
+    if (this.totalReceipts === 0) {
       return 'No documents yet';
     }
 
-    if (shown === total) {
-      return `${total} document${total > 1 ? 's' : ''}`;
+    if (shown === this.receipts.length) {
+      return `${this.totalReceipts} document${this.totalReceipts > 1 ? 's' : ''} · page ${this.currentPage} of ${this.totalPages}`;
     }
 
-    return `Showing ${shown} of ${total} documents`;
+    return `Showing ${shown} of ${this.receipts.length} on this page (${this.totalReceipts} total)`;
   }
 
   openDeleteModal(id: number): void {

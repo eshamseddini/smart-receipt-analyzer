@@ -3,12 +3,13 @@ import uuid
 
 from fastapi import UploadFile
 
-async def save_uploaded_file(file: UploadFile) -> str:
+async def save_uploaded_file(file: UploadFile, contents: bytes) -> str:
     """
-    Save an uploaded file to the 'uploads' directory.
+    Save already-read uploaded file content to the 'uploads' directory.
 
     Args:
         file (UploadFile): The uploaded file to be saved.
+        contents (bytes): The raw content of the uploaded file.
 
     Returns:
         str: The path where the file was saved.
@@ -23,7 +24,7 @@ async def save_uploaded_file(file: UploadFile) -> str:
 
     # Save the uploaded file to the destination path
     with open(dest_path, "wb") as f:
-        f.write(await file.read())
+        f.write(contents)
 
     return dest_path
 

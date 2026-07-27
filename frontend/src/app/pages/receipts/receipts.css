@@ -639,3 +639,67 @@
   font-size: 13px;
   font-weight: 900;
 }
+
+.upload-alert {
+  margin-top: 16px;
+  padding: 16px 18px;
+  border-radius: 16px;
+  border: 1px solid;
+}
+
+.upload-alert strong {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 0.95rem;
+}
+
+.upload-alert p {
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.upload-alert-error {
+  color: #991b1b;
+  background: #fef2f2;
+  border-color: #fecaca;
+}
+
+.upload-alert-success {
+  color: #166534;
+  background: #f0fdf4;
+  border-color: #bbf7d0;
+}
+
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid var(--color-border, #e5e7eb);
+}
+
+.pagination-status {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--color-text-muted, #6b7280);
+}
+
+.pagination-button {
+  padding: 8px 16px;
+  border-radius: 999px;
+  border: 1px solid rgba(37, 99, 235, 0.2);
+  background: var(--color-primary-soft);
+  color: var(--color-primary-dark);
+  font-weight: 700;
+  font-size: 13px;
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+}
+
+.pagination-button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}

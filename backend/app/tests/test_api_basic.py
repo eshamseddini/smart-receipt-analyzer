@@ -65,7 +65,13 @@ def test_get_receipts_list():
     response = client.get("/api/receipts/")
 
     assert response.status_code == 200
-    assert isinstance(response.json(), list)
+
+    data = response.json()
+    assert "items" in data
+    assert "total" in data
+    assert "skip" in data
+    assert "limit" in data
+    assert isinstance(data["items"], list)
 
 
 def test_get_analytics_insights():

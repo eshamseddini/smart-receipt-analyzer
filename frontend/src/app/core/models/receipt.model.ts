@@ -49,6 +49,13 @@ export interface UploadReceiptResponse {
   message: string;
 }
 
+export interface PaginatedReceipts {
+  items: ReceiptListItem[];
+  total: number;
+  skip: number;
+  limit: number;
+}
+
 export interface DeleteReceiptResponse {
   receipt_id: number;
   message: string;

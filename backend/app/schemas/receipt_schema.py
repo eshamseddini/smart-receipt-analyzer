@@ -36,6 +36,12 @@ class ReceiptDetail(ReceiptListItem):
     structured_data: ExtractedReceiptData | None   
     validation_result: ValidationResult | None
 
+class PaginatedReceiptsResponse(BaseModel):
+    items: list[ReceiptListItem]
+    total: int
+    skip: int
+    limit: int
+
 class DeleteReceiptResponse(BaseModel):
     receipt_id: int
     message: str

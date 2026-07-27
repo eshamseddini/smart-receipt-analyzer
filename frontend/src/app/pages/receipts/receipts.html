@@ -21,7 +21,7 @@
 
       <div class="hero-card">
         <span class="hero-card-label">Total documents</span>
-        <strong>{{ receipts.length }}</strong>
+        <strong>{{ totalReceipts }}</strong>
         <p>Processed files in your library</p>
       </div>
     </header>
@@ -58,14 +58,20 @@
           (clicked)="uploadReceipt()"
         />
       </div>
-    </section>
+      @if (errorMessage) {
+        <div class="upload-alert upload-alert-error">
+          <strong>Upload rejected</strong>
+          <p>{{ errorMessage }}</p>
+        </div>
+      }
 
-    @if (successMessage) {
-      <app-page-state
-        type="success"
-        [message]="successMessage"
-      />
-    }
+      @if (successMessage) {
+        <div class="upload-alert upload-alert-success">
+          <strong>Success</strong>
+          <p>{{ successMessage }}</p>
+        </div>
+      }
+    </section>
 
     @if (loading) {
       <app-page-state
@@ -74,14 +80,7 @@
       />
     }
 
-    @if (errorMessage) {
-      <app-page-state
-        type="error"
-        [message]="errorMessage"
-      />
-    }
-
-    @if (!loading && receipts.length === 0) {
+    @if (!loading && totalReceipts === 0) {
       <section class="empty-state">
         <div class="empty-icon">⌁</div>
 
@@ -94,7 +93,7 @@
       </section>
     }
 
-    @if (receipts.length > 0) {
+    @if (totalReceipts > 0) {
       <section class="receipts-panel">
         <div class="panel-header">
           <div>
@@ -224,6 +223,32 @@
         @if (filteredReceipts.length === 0 && receipts.length > 0) {
           <div class="empty-filter">
             No document matches your current filters.
+          </div>
+        }
+
+        @if (totalPages > 1) {
+          <div class="pagination">
+            <button
+              type="button"
+              class="pagination-button"
+              [disabled]="currentPage === 1"
+              (click)="previousPage()"
+            >
+              Previous
+            </button>
+
+            <span class="pagination-status">
+              Page {{ currentPage }} of {{ totalPages }}
+            </span>
+
+            <button
+              type="button"
+              class="pagination-button"
+              [disabled]="currentPage === totalPages"
+              (click)="nextPage()"
+            >
+              Next
+            </button>
           </div>
         }
       </section>

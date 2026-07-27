@@ -6,8 +6,8 @@ import { API_BASE_URL } from '../constants/api.constants';
 import {
   DeleteReceiptResponse,
   ExtractedReceiptData,
+  PaginatedReceipts,
   ReceiptDetail,
-  ReceiptListItem,
   UploadReceiptResponse
 } from '../models/receipt.model';
 
@@ -19,8 +19,10 @@ export class ReceiptService {
 
   constructor(private http: HttpClient) {}
 
-  getReceipts(): Observable<ReceiptListItem[]> {
-    return this.http.get<ReceiptListItem[]>(`${this.baseUrl}/api/receipts/`);
+  getReceipts(skip = 0, limit = 20): Observable<PaginatedReceipts> {
+    return this.http.get<PaginatedReceipts>(`${this.baseUrl}/api/receipts/`, {
+      params: { skip, limit },
+    });
   }
 
   getReceiptById(id: number): Observable<ReceiptDetail> {

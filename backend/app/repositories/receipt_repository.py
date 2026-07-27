@@ -32,16 +32,23 @@ def create_receipt(
 
     return db_receipt
 
-def get_receipts(db: Session, limit: int = 50):
+def get_receipts(db: Session, skip: int = 0, limit: int = 50):
     """
-    Retrieve a list of receipts from the database.
+    Retrieve a paginated list of receipts from the database, most recent first.
     """
     return (
         db.query(Receipt)
         .order_by(Receipt.created_at.desc())
+        .offset(skip)
         .limit(limit)
         .all()
     )
+
+def count_receipts(db: Session) -> int:
+    """
+    Count the total number of receipts in the database.
+    """
+    return db.query(Receipt).count()
 
 def get_receipt_by_id(db: Session, receipt_id: int):
     """

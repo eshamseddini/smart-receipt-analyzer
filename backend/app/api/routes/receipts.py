@@ -1,22 +1,25 @@
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
 from sqlalchemy.orm import Session
 from app.db.database import get_db
-from app.repositories.receipt_repository import create_receipt, delete_receipt, get_receipt_by_id,get_receipts, update_receipt_structured_data 
+from app.repositories.receipt_repository import create_receipt, delete_receipt, get_receipt_by_id, get_receipts, count_receipts, update_receipt_structured_data
 
 from app.services.file_service import delete_local_file, save_uploaded_file
 from app.schemas.upload_schema import UploadReceiptResponse
-from app.services.validation_service import validate_uploaded_file
+from app.services.validation_service import validate_uploaded_file, validate_file_size
 from app.services.ocr.ocr_service import extract_text_from_file
 from app.services.classification_service import classify_document
 from app.services.extraction_service import extract_structured_data, calculate_category_totals_from_items
 from app.services.business_validation_service import validate_extracted_data
-from app.schemas.receipt_schema import DeleteReceiptResponse, ReceiptDetail, ReceiptListItem, UpdateReceiptStructuredDataRequest
+from app.services.integrations_service import send_receipt_processed_webhook
+from app.schemas.receipt_schema import DeleteReceiptResponse, PaginatedReceiptsResponse, ReceiptDetail, ReceiptListItem, UpdateReceiptStructuredDataRequest
 
 router = APIRouter()
 @router.post("/upload", response_model=UploadReceiptResponse)
 async def upload_receipt(file : UploadFile = File(...), db: Session = Depends(get_db)) -> UploadReceiptResponse:
     validate_uploaded_file(file)
-    dest_path = await save_uploaded_file(file)
+    contents = await file.read()
+    validate_file_size(contents)
+    dest_path = await save_uploaded_file(file, contents)
     extracted_text = extract_text_from_file(dest_path)
     document_type = classify_document(extracted_text)
     try:
@@ -44,6 +47,13 @@ async def upload_receipt(file : UploadFile = File(...), db: Session = Depends(ge
         validation_result=validation_result.model_dump()
     )
 
+    await send_receipt_processed_webhook(
+        receipt_id=created_receipt.id,
+        document_type=document_type,
+        structured_data=structured_data,
+        validation_result=validation_result,
+    )
+
     return UploadReceiptResponse(
         receipt_id=created_receipt.id,
         filename=file.filename,
@@ -56,13 +66,14 @@ async def upload_receipt(file : UploadFile = File(...), db: Session = Depends(ge
         message="File uploaded, processed, structured, validated and saved successfully.",
     )
 
-@router.get("/", response_model=list[ReceiptListItem])
-def list_receipts(db: Session = Depends(get_db), limit: int = 50):
+@router.get("/", response_model=PaginatedReceiptsResponse)
+def list_receipts(db: Session = Depends(get_db), skip: int = 0, limit: int = 20):
     """
-    Retrieve a list of receipts from the database.
+    Retrieve a paginated list of receipts from the database.
     """
-    receipts = get_receipts(db, limit=limit)
-    return receipts
+    receipts = get_receipts(db, skip=skip, limit=limit)
+    total = count_receipts(db)
+    return PaginatedReceiptsResponse(items=receipts, total=total, skip=skip, limit=limit)
 
 @router.get("/{receipt_id}", response_model=ReceiptDetail)
 def get_receipt_detail(receipt_id: int, db: Session = Depends(get_db)):

@@ -161,7 +161,7 @@ Angular dashboard
 **Receipt endpoints**
 
 - `POST /api/receipts/upload`: Upload a receipt image or PDF
-- `GET /api/receipts`: Get all receipts
+- `GET /api/receipts?skip=0&limit=20`: Get a paginated list of receipts (`{ items, total, skip, limit }`)
 - `GET /api/receipts/{id}`: Get a specific receipt
 - `PATCH /api/receipts/{receipt_id}/structured-data`: Update structured data
 - `DELETE /api/receipts/{id}`: Delete a receipt
@@ -195,6 +195,47 @@ Run analytics tests:
 cd backend
 pytest app/tests/test_services_analytics.py -v 
 ```
+
+## n8n / Make integration
+
+The backend can notify an external automation tool (n8n, Make, or any webhook receiver) every time a receipt is successfully processed. This lets you build notifications, spreadsheet syncing, or data-quality alerts without touching the backend code.
+
+### Configuration
+
+Set the following in `backend/.env`:
+
+```env
+WEBHOOK_ENABLED=true
+WEBHOOK_URL=https://your-n8n-instance/webhook/receipt-processed
+```
+
+When disabled (default), the upload flow behaves exactly as before — the webhook call is entirely skipped.
+
+### Event payload
+
+On every successful upload, a `receipt.processed` event is POSTed as JSON:
+
+```json
+{
+  "event": "receipt.processed",
+  "receipt_id": 42,
+  "document_type": "receipt",
+  "structured_data": { "merchant_name": "LIDL", "total_amount": 23.4, "items": [ /* ... */ ] },
+  "validation": { "is_valid": true, "errors": [], "warnings": [] }
+}
+```
+
+The webhook call is fire-and-forget: a slow or unreachable endpoint is logged as a warning and never breaks the upload response for the user.
+
+### Building the n8n workflow
+
+1. Run n8n locally: `docker run -it --rm --name n8n -p 5678:5678 -v n8n_data:/home/node/.n8n docker.n8n.io/n8nio/n8n`
+2. Create a workflow starting with a **Webhook** node (trigger), method `POST`.
+3. Use the **Test URL** during development (only active while "Listen for test event" is running), point `WEBHOOK_URL` to it, and upload a receipt to see the payload land in n8n.
+4. Add an **IF** node checking `validation.warnings.length > 0` or `validation.is_valid == false` to branch between a data-quality alert (Slack/Email) and the happy path (e.g. Google Sheets "Append Row" mapped to `merchant_name`, `total_amount`, `purchase_date`).
+5. Activate the workflow and switch `WEBHOOK_URL` to the **Production URL**.
+
+The same payload works identically with Make — only the workflow-building UI differs.
 
 ## Run the project locally
 1. Backend
