@@ -245,7 +245,7 @@ cd backend
 pytest app/tests/test_services_analytics.py -v 
 ```
 
-## n8n / Make integration
+## n8n integration
 
 The backend can notify an external automation tool (n8n, Make, or any webhook receiver) every time a receipt is successfully processed. This lets you build notifications, spreadsheet syncing, or data-quality alerts without touching the backend code.
 
