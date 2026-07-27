@@ -325,6 +325,33 @@ Frontend runs on:
 
 ---
 
+## Deploy a public demo
+
+The repo is ready to deploy as-is on [Render](https://render.com) using the `render.yaml` Blueprint at the repo root — no code changes needed, only account setup and a few clicks.
+
+### How it works
+
+- `frontend/nginx.conf.template` uses a `${BACKEND_URL}` placeholder, filled in at container startup by nginx's built-in `envsubst` templating (no rebuild needed to point the frontend at a different backend URL).
+- The backend's allowed CORS origins are read from the `ALLOWED_ORIGINS` env var (comma-separated), instead of being hardcoded.
+- `DATABASE_URL` is normalized from Render/Heroku's `postgres://` scheme to the `postgresql://` scheme SQLAlchemy expects.
+
+### Steps (Render)
+
+1. Push this repo to GitHub (if not already).
+2. Create a free [Render](https://render.com) account and connect your GitHub account.
+3. In the Render dashboard: **New → Blueprint**, select this repo. Render reads `render.yaml` and proposes 3 resources: `smart-receipt-backend`, `smart-receipt-frontend`, `smart-receipt-db` (free Postgres).
+4. Click **Apply** — Render builds both Docker images and provisions the database.
+5. Once deployed, note the actual URLs Render assigned (e.g. `https://smart-receipt-backend-xxxx.onrender.com`). If they differ from the `render.yaml` defaults (`smart-receipt-backend.onrender.com` / `smart-receipt-frontend.onrender.com`), update the `ALLOWED_ORIGINS` env var on the backend service and the `BACKEND_URL` env var on the frontend service in the Render dashboard to match, then trigger a manual redeploy of each.
+6. Open the frontend URL — you should get a working demo end-to-end.
+
+### Known limitations of the free tier
+
+- Free web services on Render spin down after inactivity; the first request after idling can take ~30-60s to wake up.
+- Uploaded receipt files are stored on local container disk (`backend/uploads/`) — on a free/ephemeral instance this storage does **not** persist across redeploys. The database (Postgres, managed separately) does persist. For a fully durable demo, add a Render persistent disk or swap `file_service.py` to an S3-compatible bucket.
+- The n8n webhook integration is disabled by default (`WEBHOOK_ENABLED=false`) — it targets a local n8n instance and isn't part of this deployment. To wire it up in production, run n8n separately (e.g. n8n Cloud, or a separate Render/VPS deployment) and point `WEBHOOK_URL` at it.
+
+---
+
 ## Why this project matters
 This project demonstrates practical full-stack engineering skills:
 - Building a REST API with FastAPI
@@ -360,6 +387,7 @@ The frontend build is also checked automatically with GitHub Actions.
 Frontend CI checks:
 
 - Node.js dependency installation
+- Angular unit tests (Vitest)
 - Angular production build
 
 Workflow file:
