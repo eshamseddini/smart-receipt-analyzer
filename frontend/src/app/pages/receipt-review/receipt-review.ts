@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, ElementRef, OnInit, QueryList, ViewChildren } from '@angular/core';
 import { DecimalPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
@@ -19,6 +19,8 @@ import { API_BASE_URL } from '../../core/constants/api.constants';
   styleUrl: './receipt-review.css',
 })
 export class ReceiptReview implements OnInit {
+  @ViewChildren('itemRow') itemRows!: QueryList<ElementRef<HTMLElement>>;
+
   receipt: ReceiptDetail | null = null;
   editableData: ExtractedReceiptData | null = null;
 
@@ -84,6 +86,15 @@ export class ReceiptReview implements OnInit {
       total_price: 0,
       category: 'other',
     });
+
+    setTimeout(() => this.scrollToLastItem());
+  }
+
+  private scrollToLastItem(): void {
+    const rows = this.itemRows?.toArray();
+    const lastRow = rows?.[rows.length - 1];
+
+    lastRow?.nativeElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
   }
 
   removeItem(index: number): void {

@@ -184,7 +184,7 @@
             </div>
 
             @for (item of editableData.items; track $index; let index = $index) {
-                <article class="items-edit-row">
+                <article class="items-edit-row" #itemRow>
                 <label class="mobile-field-label">Product name</label>
                 <input [(ngModel)]="item.name" />
 

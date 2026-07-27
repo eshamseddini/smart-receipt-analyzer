@@ -10,7 +10,7 @@ from app.services.ocr.ocr_service import extract_text_from_file
 from app.services.classification_service import classify_document
 from app.services.extraction_service import extract_structured_data, calculate_category_totals_from_items
 from app.services.business_validation_service import validate_extracted_data
-from app.services.integrations_service import send_receipt_processed_webhook
+from app.services.integrations_service import send_receipt_webhook
 from app.schemas.receipt_schema import DeleteReceiptResponse, PaginatedReceiptsResponse, ReceiptDetail, ReceiptListItem, UpdateReceiptStructuredDataRequest
 
 router = APIRouter()
@@ -47,7 +47,8 @@ async def upload_receipt(file : UploadFile = File(...), db: Session = Depends(ge
         validation_result=validation_result.model_dump()
     )
 
-    await send_receipt_processed_webhook(
+    await send_receipt_webhook(
+        event="receipt.processed",
         receipt_id=created_receipt.id,
         document_type=document_type,
         structured_data=structured_data,
@@ -100,7 +101,7 @@ def delete_receipt_by_id(receipt_id: int, db: Session = Depends(get_db)):
     )
 
 @router.patch("/{receipt_id}/structured-data", response_model=ReceiptDetail)
-def update_structured_data(
+async def update_structured_data(
     receipt_id: int,
     payload: UpdateReceiptStructuredDataRequest,
     db: Session = Depends(get_db),
@@ -122,5 +123,13 @@ def update_structured_data(
 
     if not updated_receipt:
         raise HTTPException(status_code=404, detail="Receipt not found")
+
+    await send_receipt_webhook(
+        event="receipt.updated",
+        receipt_id=updated_receipt.id,
+        document_type=updated_receipt.document_type,
+        structured_data=corrected_data,
+        validation_result=validation_result,
+    )
 
     return updated_receipt
