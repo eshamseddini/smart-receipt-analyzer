@@ -127,26 +127,75 @@ smart-receipt-analyzer/
 
 ---
 
-## Data Pipeline
-Upload document
-      ↓
-File validation
-      ↓
-OCR text extraction
-      ↓
-Document classification
-      ↓
-Structured JSON extraction
-      ↓
-JSON schema validation
-      ↓
-Business validation
-      ↓
-Database storage
-      ↓
-Analytics aggregation
-      ↓
-Angular dashboard
+## System overview
+
+```mermaid
+graph LR
+    User(("User"))
+    FE["Angular frontend"]
+    BE["FastAPI backend"]
+    DB[("Database\n(SQLite / PostgreSQL)")]
+    OCR["OCR engine\n(Tesseract)"]
+    N8N["n8n / Make\n(automation)"]
+    Sheets["Google Sheets"]
+    Notify["Slack / Email"]
+
+    User --> FE
+    FE <--> BE
+    BE --> OCR
+    BE <--> DB
+    BE -- "webhook: receipt.processed\nreceipt.updated" --> N8N
+    N8N --> Sheets
+    N8N --> Notify
+```
+
+---
+
+## Data pipeline
+
+```mermaid
+flowchart TD
+    A[Upload document] --> B[File validation\nsize + MIME whitelist]
+    B --> C[OCR text extraction]
+    C --> D[Document classification]
+    D --> E[Structured JSON extraction]
+    E --> F[JSON schema validation]
+    F --> G[Business validation]
+    G --> H[Database storage]
+    H --> I[Analytics aggregation]
+    H --> J[Webhook: receipt.processed]
+    I --> K[Angular dashboard]
+    J --> L[n8n workflow]
+```
+
+---
+
+## Automation flow (n8n / Make)
+
+```mermaid
+sequenceDiagram
+    participant U as User
+    participant FE as Angular frontend
+    participant BE as FastAPI backend
+    participant N8N as n8n
+    participant Sheets as Google Sheets
+    participant Alert as Slack / Email
+
+    U->>FE: Upload receipt
+    FE->>BE: POST /api/receipts/upload
+    BE->>BE: OCR + extraction + validation
+    BE-->>FE: Structured data + validation result
+    BE->>N8N: POST webhook (receipt.processed)
+    N8N->>Sheets: Append row
+    alt validation.is_valid == false
+        N8N->>Alert: Send data-quality alert
+    end
+
+    U->>FE: Correct extracted data
+    FE->>BE: PATCH /structured-data
+    BE->>N8N: POST webhook (receipt.updated)
+    N8N->>Sheets: Update matching row
+```
 
 --- 
 
@@ -227,9 +276,21 @@ On every successful upload, a `receipt.processed` event is POSTed as JSON:
 
 The webhook call is fire-and-forget: a slow or unreachable endpoint is logged as a warning and never breaks the upload response for the user.
 
+### Running n8n
+
+The `docker-compose.yml` at the repo root already includes an `n8n` service, wired so the backend container can reach it at `http://n8n:5678` on the Docker network. Just run:
+
+```bash
+docker compose up
+```
+
+n8n will be available at `http://localhost:5678`. To activate the webhook call from the backend container, create a `.env` file next to `docker-compose.yml` with `WEBHOOK_ENABLED=true` (it defaults to `false`).
+
+Alternatively, to run n8n standalone (outside Docker Compose): `docker run -it --rm --name n8n -p 5678:5678 -v n8n_data:/home/node/.n8n docker.n8n.io/n8nio/n8n`
+
 ### Building the n8n workflow
 
-1. Run n8n locally: `docker run -it --rm --name n8n -p 5678:5678 -v n8n_data:/home/node/.n8n docker.n8n.io/n8nio/n8n`
+1. Open n8n (see above)
 2. Create a workflow starting with a **Webhook** node (trigger), method `POST`.
 3. Use the **Test URL** during development (only active while "Listen for test event" is running), point `WEBHOOK_URL` to it, and upload a receipt to see the payload land in n8n.
 4. Add an **IF** node checking `validation.warnings.length > 0` or `validation.is_valid == false` to branch between a data-quality alert (Slack/Email) and the happy path (e.g. Google Sheets "Append Row" mapped to `merchant_name`, `total_amount`, `purchase_date`).
