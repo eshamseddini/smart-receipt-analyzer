@@ -22,6 +22,7 @@ RUN if [ -f /usr/share/nginx/html/index.csr.html ]; then \
 COPY nginx.conf.template /etc/nginx/templates/default.conf.template
 
 ENV BACKEND_URL=http://backend:8000
+ENV CLIENT_MAX_BODY_SIZE=12M
 
 EXPOSE 80
 

@@ -26,6 +26,7 @@ services:
       - "4200:80"
     environment:
       - BACKEND_URL=http://backend:8000
+      - CLIENT_MAX_BODY_SIZE=12M
     depends_on:
       - backend
 
