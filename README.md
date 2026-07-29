@@ -1,5 +1,8 @@
 # Smart Receipt Analyzer
 
+**Live demo:** [frontend](https://smart-receipt-frontend-fwi4.onrender.com) · [backend API docs](https://smart-receipt-backend.onrender.com/docs)
+*(hosted on Render's free tier — the first request after a period of inactivity can take 30-60s to wake up)*
+
 Smart Receipt Analyzer is a full-stack AI and data analytics project that extracts, structures, validates and analyzes receipt data from uploaded documents.
 
 The goal of this project is to demonstrate a complete engineering workflow:
@@ -327,7 +330,7 @@ Frontend runs on:
 
 ## Deploy a public demo
 
-The repo is ready to deploy as-is on [Render](https://render.com) using the `render.yaml` Blueprint at the repo root — no code changes needed, only account setup and a few clicks.
+The repo is ready to deploy as-is on [Render](https://render.com) using the `render.yaml` Blueprint at the repo root — no code changes needed, only account setup and a few clicks. See the [live demo](#smart-receipt-analyzer) above for a real example of this deployment.
 
 ### How it works
 
@@ -341,7 +344,7 @@ The repo is ready to deploy as-is on [Render](https://render.com) using the `ren
 2. Create a free [Render](https://render.com) account and connect your GitHub account.
 3. In the Render dashboard: **New → Blueprint**, select this repo. Render reads `render.yaml` and proposes 3 resources: `smart-receipt-backend`, `smart-receipt-frontend`, `smart-receipt-db` (free Postgres).
 4. Click **Apply** — Render builds both Docker images and provisions the database.
-5. Once deployed, note the actual URLs Render assigned (e.g. `https://smart-receipt-backend-xxxx.onrender.com`). If they differ from the `render.yaml` defaults (`smart-receipt-backend.onrender.com` / `smart-receipt-frontend.onrender.com`), update the `ALLOWED_ORIGINS` env var on the backend service and the `BACKEND_URL` env var on the frontend service in the Render dashboard to match, then trigger a manual redeploy of each.
+5. Once deployed, note the actual URLs Render assigned (e.g. `https://smart-receipt-backend-xxxx.onrender.com`) — Render appends a random suffix if the exact name from `render.yaml` is already taken globally. If they differ from the defaults (`smart-receipt-backend.onrender.com` / `smart-receipt-frontend.onrender.com`), update the `ALLOWED_ORIGINS` env var on the backend service and the `BACKEND_URL` env var on the frontend service in the Render dashboard to match, then let Render redeploy.
 6. Open the frontend URL — you should get a working demo end-to-end.
 
 ### Known limitations of the free tier
@@ -349,6 +352,26 @@ The repo is ready to deploy as-is on [Render](https://render.com) using the `ren
 - Free web services on Render spin down after inactivity; the first request after idling can take ~30-60s to wake up.
 - Uploaded receipt files are stored on local container disk (`backend/uploads/`) — on a free/ephemeral instance this storage does **not** persist across redeploys. The database (Postgres, managed separately) does persist. For a fully durable demo, add a Render persistent disk or swap `file_service.py` to an S3-compatible bucket.
 - The n8n webhook integration is disabled by default (`WEBHOOK_ENABLED=false`) — it targets a local n8n instance and isn't part of this deployment. To wire it up in production, run n8n separately (e.g. n8n Cloud, or a separate Render/VPS deployment) and point `WEBHOOK_URL` at it.
+
+### A real gotcha we hit (and already fixed in this repo)
+
+When `BACKEND_URL` points to an **HTTPS** host (as it does on Render, vs. plain HTTP in local Docker Compose), nginx needs two extra directives to correctly reverse-proxy to it — otherwise you get an intermittent `502 Bad Gateway`:
+
+```nginx
+proxy_ssl_server_name on;        # sends the correct SNI during the TLS handshake
+proxy_set_header Host $proxy_host;  # forwards the upstream's own hostname, not the frontend's
+```
+
+Without `proxy_ssl_server_name on`, Cloudflare (which fronts Render) can't route the TLS connection correctly. Without the corrected `Host` header, requests fail because they carry the *frontend's* hostname while trying to reach the *backend's*. Both are already set in [`frontend/nginx.conf.template`](frontend/nginx.conf.template).
+
+---
+
+## Roadmap / possible next steps
+
+- **User accounts & authentication** — the app is currently single-tenant (no login, all receipts are shared/global). Adding JWT-based auth with per-user data isolation and personalized analytics would be a natural next step, but is a substantial change (user model, data migration, per-endpoint filtering, frontend guards) — intentionally left out for now to keep the current focus on the OCR/analytics/automation pipeline.
+- CSV/PDF export of analytics
+- Additional hand-tuned merchant parsers (currently 4 dedicated + 4 generic-parser merchants)
+- Persistent file storage (S3-compatible) for a fully durable free-tier deployment
 
 ---
 
