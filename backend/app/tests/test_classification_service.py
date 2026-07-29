@@ -20,3 +20,20 @@ def test_sans_mot():
     text = ""
     result = classify_document(text)
     assert result == "unknown"
+
+def test_noisy_receipt_with_single_keyword_match():
+    """
+    Real-world noisy OCR (poor scan quality) where most receipt keywords
+    are unreadable, but "Hors Taxe" survives clearly. A single strong
+    keyword match should be enough to classify as a receipt.
+    """
+    text = """
+    Carrefour < es
+    CRF CITY, RENNES VOLTAIRE
+    Tel : 02.23,44,81.10
+    HEGIANO RE a 2.98€
+    18.50€
+    Hors Taxe
+    """
+    result = classify_document(text)
+    assert result == "receipt"

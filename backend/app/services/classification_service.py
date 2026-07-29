@@ -27,6 +27,7 @@ def classify_document(text: str) -> str:
             "methode de paiement",
             "méthode de paiement",
             "cb",
+            "hors taxe",
         ],
     )
 
@@ -46,10 +47,10 @@ def classify_document(text: str) -> str:
         ],
     )
 
-    if receipt_score >= 2 and receipt_score >= invoice_score:
+    if receipt_score >= 1 and receipt_score >= invoice_score:
         return "receipt"
 
-    if invoice_score >= 2 and invoice_score > receipt_score:
+    if invoice_score >= 1 and invoice_score > receipt_score:
         return "invoice"
 
     return "unknown"
