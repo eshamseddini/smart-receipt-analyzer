@@ -5,7 +5,21 @@ from app.schemas.receipt_schema import ExtractedReceiptData
 from app.services.item_categorization_service import categorize_item
 
 
-SUPPORTED_MERCHANTS = {"LIDL", "LECLERC", "SUPER U", "ACTION"}
+SUPPORTED_MERCHANTS = {
+    "LIDL",
+    "LECLERC",
+    "SUPER U",
+    "ACTION",
+    "ALDI",
+    "CARREFOUR",
+    "INTERMARCHE",
+    "FRANPRIX"
+}
+
+# Merchants without a dedicated, hand-tuned parser yet. They share a
+# best-effort generic parser (name + trailing price) instead of a fallback
+# that silently tries every merchant's parser and risks producing wrong data.
+GENERIC_PARSER_MERCHANTS = {"ALDI", "CARREFOUR", "INTERMARCHE", "FRANPRIX"}
 
 
 def extract_structured_data(
@@ -62,10 +76,7 @@ def extract_merchant_name(text: str) -> str | None:
         ("SUPER U", ["super u", "magasin u", "commercants autrement", "commercantes autrement", "carte u"]),
         ("ACTION", ["//action", " action", "allee de guerledan"]),
         ("CARREFOUR", ["carrefour"]),
-        ("MONOPRIX", ["monoprix"]),
-        ("AUCHAN", ["auchan"]),
         ("INTERMARCHE", ["intermarche"]),
-        ("CASINO", ["casino"]),
         ("FRANPRIX", ["franprix"]),
     ]
 
@@ -142,6 +153,8 @@ def extract_total_amount(text: str) -> float | None:
         "transaction",
         "telephone",
         "tel.",
+        "tel :",
+        "tel:",
         "siret",
         "capital",
     ]
@@ -269,6 +282,9 @@ def parse_item_line_by_merchant(
 
     if merchant_name == "ACTION":
         return parse_action_item_line(line)
+
+    if merchant_name in GENERIC_PARSER_MERCHANTS:
+        return parse_generic_item_line(line)
 
     return None
 
@@ -485,6 +501,53 @@ def parse_leclerc_item_line(line: str) -> dict | None:
         "name": name,
         "unit_price": unit_price,
         "quantity": quantity,
+        "total_price": total_price,
+    }
+
+
+def parse_generic_item_line(line: str) -> dict | None:
+    """
+    Best-effort parser shared by merchants without a hand-tuned format yet
+    (see GENERIC_PARSER_MERCHANTS). Assumes the common French receipt layout:
+
+    <product name> <total_price>€
+
+    Examples (Carrefour, noisy OCR):
+    HEGIANO RE a 2.98€
+    x6 OEUFS POULES ELE 1.81€
+    x6X30G CHIPS LISSE 1,90€
+
+    No quantity/unit price column is assumed — quantity defaults to 1 and
+    unit_price equals total_price, since the format varies too much between
+    unsupported merchants to parse reliably without real samples.
+    """
+
+    normalized_line = normalize_ocr_text(line)
+
+    pattern = re.compile(
+        r"^(?P<name>.+?)\s+"
+        r"(?P<total_price>\d+[,.]\d{2})\s*(?:eur|€)\b",
+        re.IGNORECASE,
+    )
+
+    match = pattern.search(normalized_line)
+
+    if not match:
+        return None
+
+    name = clean_item_name(match.group("name"))
+    total_price = parse_amount(match.group("total_price"))
+
+    if not name or total_price is None:
+        return None
+
+    if should_ignore_product_name(name):
+        return None
+
+    return {
+        "name": name,
+        "unit_price": total_price,
+        "quantity": 1.0,
         "total_price": total_price,
     }
 
