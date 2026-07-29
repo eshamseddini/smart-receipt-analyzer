@@ -6,20 +6,24 @@ def test_invoice():
     result = classify_document(text)
     assert result == "invoice"
 
+
 def test_receipt():
     text = "This is a receipt document."
     result = classify_document(text)
     assert result == "receipt"
 
+
 def test_unknown():
     text = "This is an unknown document."
     result = classify_document(text)
-    assert result == "unknown"  
- 
+    assert result == "unknown"
+
+
 def test_sans_mot():
     text = ""
     result = classify_document(text)
     assert result == "unknown"
+
 
 def test_noisy_receipt_with_single_keyword_match():
     """

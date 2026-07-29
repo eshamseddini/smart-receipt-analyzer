@@ -5,13 +5,11 @@
         <span class="eyebrow">AI Receipt Analytics</span>
         <h1>Smart Receipt Analyzer</h1>
         <p>
-          Upload receipts, extract structured data with OCR, validate the result,
-          and monitor document analytics in one place.
+          Upload receipts, extract structured data with OCR, validate the result, and monitor
+          document analytics in one place.
         </p>
         <div class="hero-actions">
-          <a routerLink="/receipts" class="primary-action">
-            Open receipts library
-          </a>
+          <a routerLink="/receipts" class="primary-action"> Open receipts library </a>
 
           <a routerLink="/receipts" fragment="upload" class="secondary-action">
             Upload a receipt
@@ -26,50 +24,44 @@
     </header>
 
     @if (loading) {
-      <app-page-state
-        type="loading"
-        message="Loading dashboard data..."
-      />
+      <app-page-state type="loading" message="Loading dashboard data..." />
     }
 
     @if (errorMessage) {
-      <app-page-state
-        type="error"
-        [message]="errorMessage"
-      />
+      <app-page-state type="error" [message]="errorMessage" />
     }
 
     @if (summary) {
-    <section class="kpi-grid">
-      <app-stat-card
-        label="Total receipts"
-        [value]="summary.total_receipts"
-        description="Documents processed"
-        variant="primary"
-      />
+      <section class="kpi-grid">
+        <app-stat-card
+          label="Total receipts"
+          [value]="summary.total_receipts"
+          description="Documents processed"
+          variant="primary"
+        />
 
-      <app-stat-card
-        label="Valid receipts"
-        [value]="summary.valid_receipts"
-        description="Accepted after validation"
-        variant="success"
-      />
+        <app-stat-card
+          label="Valid receipts"
+          [value]="summary.valid_receipts"
+          description="Accepted after validation"
+          variant="success"
+        />
 
-      <app-stat-card
-        label="Invalid receipts"
-        [value]="summary.invalid_receipts"
-        description="Rejected or incomplete"
-        variant="danger"
-      />
+        <app-stat-card
+          label="Invalid receipts"
+          [value]="summary.invalid_receipts"
+          description="Rejected or incomplete"
+          variant="danger"
+        />
 
-      <app-stat-card
-        label="Unknown documents"
-        [value]="summary.unknown_documents"
-        description="Need better classification"
-        variant="warning"
-      />
-    </section>
-  }
+        <app-stat-card
+          label="Unknown documents"
+          [value]="summary.unknown_documents"
+          description="Need better classification"
+          variant="warning"
+        />
+      </section>
+    }
     <section class="content-grid">
       @if (summary) {
         <article class="panel">
@@ -133,20 +125,20 @@
       }
     </section>
     @if (chartsData) {
-    <section class="charts-grid">
-      <app-bar-chart
-        title="Document types"
-        description="Visual distribution of classified documents"
-        [items]="chartsData.document_types"
-      />
+      <section class="charts-grid">
+        <app-bar-chart
+          title="Document types"
+          description="Visual distribution of classified documents"
+          [items]="chartsData.document_types"
+        />
 
-      <app-bar-chart
-        title="Validation status"
-        description="Valid, invalid and warning-based validation results"
-        [items]="chartsData.validation_status"
-        variant="secondary"
-      />
-    </section>
-  }
+        <app-bar-chart
+          title="Validation status"
+          description="Valid, invalid and warning-based validation results"
+          [items]="chartsData.validation_status"
+          variant="secondary"
+        />
+      </section>
+    }
   </div>
 </section>

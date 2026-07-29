@@ -1,5 +1,6 @@
 from pydantic import BaseModel
 
+
 class AnalyticsSummaryResponse(BaseModel):
     total_receipts: int
     valid_receipts: int
@@ -8,10 +9,12 @@ class AnalyticsSummaryResponse(BaseModel):
     receipt_documents: int
     invoice_documents: int
 
+
 class DocumentTypesStatsResponse(BaseModel):
     unknown: int
     receipt: int
     invoice: int
+
 
 class ValidationStatsResponse(BaseModel):
     valid: int
@@ -19,9 +22,11 @@ class ValidationStatsResponse(BaseModel):
     with_warnings: int
     without_warnings: int
 
+
 class ChartDataItem(BaseModel):
     label: str
     value: int
+
 
 class AnalyticsChartsResponse(BaseModel):
     document_types: list[ChartDataItem]
@@ -50,6 +55,7 @@ class CategorySpendingItem(BaseModel):
     category: str
     total_spent: float
 
+
 class AnalyticsKpis(BaseModel):
     total_spent: float
     receipt_count: int
@@ -64,6 +70,7 @@ class TopProductInsightItem(BaseModel):
     total_spent: float
     quantity: float
 
+
 class DataQualityResponse(BaseModel):
     score: int
     label: str
@@ -76,6 +83,7 @@ class DataQualityResponse(BaseModel):
 class FilterOptionsResponse(BaseModel):
     merchants: list[str]
     categories: list[str]
+
 
 class AnalyticsInsightsResponse(BaseModel):
     kpis: AnalyticsKpis

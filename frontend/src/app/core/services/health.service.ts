@@ -5,7 +5,7 @@ import { API_BASE_URL } from '../constants/api.constants';
 import { HealthResponse } from '../models/health.model';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class HealthService {
   private readonly baseUrl = API_BASE_URL;

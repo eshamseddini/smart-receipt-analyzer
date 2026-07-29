@@ -6,10 +6,7 @@ from sqlalchemy.orm import declarative_base, sessionmaker
 
 load_dotenv()
 
-DATABASE_URL = os.getenv(
-    "DATABASE_URL",
-    "sqlite:///./smart_receipt.db"
-)
+DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./smart_receipt.db")
 
 connect_args = {}
 

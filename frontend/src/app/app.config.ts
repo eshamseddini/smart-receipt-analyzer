@@ -13,9 +13,9 @@ export const appConfig: ApplicationConfig = {
       withInMemoryScrolling({
         anchorScrolling: 'enabled',
         scrollPositionRestoration: 'enabled',
-      })
-    ), 
-    provideClientHydration(withEventReplay()), 
-    provideHttpClient(withFetch())
-  ]
+      }),
+    ),
+    provideClientHydration(withEventReplay()),
+    provideHttpClient(withFetch()),
+  ],
 };

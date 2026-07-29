@@ -1,5 +1,5 @@
 from collections import defaultdict
-from datetime import datetime, date
+from datetime import date, datetime, timezone
 
 from app.models.receipt import Receipt
 
@@ -127,6 +127,7 @@ def extract_month(data: dict, receipt: Receipt) -> str:
 
     return receipt.created_at.strftime("%Y-%m")
 
+
 def build_analytics_insights(
     receipts: list[Receipt],
     period: str = "all",
@@ -148,28 +149,15 @@ def build_analytics_insights(
     category_spending = build_category_spending(filtered_receipts, category)
     top_products = build_top_products(filtered_receipts, category, limit=15)
 
-    total_spent = round(
-        sum(item["total_spent"] for item in merchant_spending),
-        2
-    )
+    total_spent = round(sum(item["total_spent"] for item in merchant_spending), 2)
 
-    receipt_count = sum(
-        item["receipt_count"] for item in merchant_spending
-    )
+    receipt_count = sum(item["receipt_count"] for item in merchant_spending)
 
     average_basket = round(total_spent / receipt_count, 2) if receipt_count else 0
 
-    top_merchant = (
-        merchant_spending[0]["merchant_name"]
-        if merchant_spending
-        else None
-    )
+    top_merchant = merchant_spending[0]["merchant_name"] if merchant_spending else None
 
-    top_category = (
-        category_spending[0]["category"]
-        if category_spending
-        else None
-    )
+    top_category = category_spending[0]["category"] if category_spending else None
 
     return {
         "kpis": {
@@ -200,7 +188,7 @@ def filter_receipts(
     date_to: str | None,
     merchant: str | None,
 ) -> list[Receipt]:
-    today = date.today()
+    today = datetime.now(timezone.utc).date()
 
     start_date: date | None = None
     end_date: date | None = None
@@ -382,6 +370,7 @@ def build_top_products(
 
     return sorted(result, key=lambda item: item["total_spent"], reverse=True)[:limit]
 
+
 def build_data_quality(
     receipts: list[Receipt],
     merchant_spending: list[dict],
@@ -390,8 +379,7 @@ def build_data_quality(
 ) -> dict:
     receipt_count = len(receipts)
     product_line_count = sum(
-        len((receipt.structured_data or {}).get("items") or [])
-        for receipt in receipts
+        len((receipt.structured_data or {}).get("items") or []) for receipt in receipts
     )
 
     category_count = len(category_spending)

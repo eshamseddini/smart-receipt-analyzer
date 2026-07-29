@@ -1,26 +1,61 @@
-from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
-from sqlalchemy.orm import Session
-from app.db.database import get_db
-from app.repositories.receipt_repository import create_receipt, delete_receipt, get_receipt_by_id, get_receipts, count_receipts, update_receipt_structured_data
+import logging
 
-from app.services.file_service import delete_local_file, save_uploaded_file
+from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
+from sqlalchemy.orm import Session
+
+from app.db.database import get_db
+from app.repositories.receipt_repository import (
+    count_receipts,
+    create_receipt,
+    delete_receipt,
+    get_receipt_by_id,
+    get_receipts,
+    update_receipt_structured_data,
+)
+from app.schemas.receipt_schema import (
+    DeleteReceiptResponse,
+    PaginatedReceiptsResponse,
+    ReceiptDetail,
+    UpdateReceiptStructuredDataRequest,
+)
 from app.schemas.upload_schema import UploadReceiptResponse
-from app.services.validation_service import validate_uploaded_file, validate_file_size
-from app.services.ocr.ocr_service import extract_text_from_file
-from app.services.classification_service import classify_document
-from app.services.extraction_service import extract_structured_data, calculate_category_totals_from_items
 from app.services.business_validation_service import validate_extracted_data
+from app.services.classification_service import classify_document
+from app.services.extraction_service import (
+    calculate_category_totals_from_items,
+    extract_structured_data,
+)
+from app.services.file_service import delete_local_file, save_uploaded_file
 from app.services.integrations_service import send_receipt_webhook
-from app.schemas.receipt_schema import DeleteReceiptResponse, PaginatedReceiptsResponse, ReceiptDetail, ReceiptListItem, UpdateReceiptStructuredDataRequest
+from app.services.ocr.ocr_service import extract_text_from_file
+from app.services.validation_service import validate_file_size, validate_uploaded_file
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter()
+
+
 @router.post("/upload", response_model=UploadReceiptResponse)
-async def upload_receipt(file : UploadFile = File(...), db: Session = Depends(get_db)) -> UploadReceiptResponse:
+async def upload_receipt(
+    file: UploadFile = File(...), db: Session = Depends(get_db)
+) -> UploadReceiptResponse:
     validate_uploaded_file(file)
     contents = await file.read()
     validate_file_size(contents)
-    dest_path = await save_uploaded_file(file, contents)
-    extracted_text = extract_text_from_file(dest_path)
+    dest_path = save_uploaded_file(file, contents)
+
+    try:
+        extracted_text = extract_text_from_file(dest_path)
+    except Exception as error:
+        logger.warning("OCR failed to read uploaded file %s: %s", dest_path, error)
+        raise HTTPException(
+            status_code=422,
+            detail={
+                "message": "Unable to read this file. It may be corrupted or not a valid image/PDF.",
+                "filename": file.filename,
+            },
+        ) from error
+
     document_type = classify_document(extracted_text)
     try:
         structured_data = extract_structured_data(extracted_text, document_type)
@@ -44,7 +79,7 @@ async def upload_receipt(file : UploadFile = File(...), db: Session = Depends(ge
         extracted_text=extracted_text,
         document_type=document_type,
         structured_data=structured_data.model_dump(),
-        validation_result=validation_result.model_dump()
+        validation_result=validation_result.model_dump(),
     )
 
     await send_receipt_webhook(
@@ -67,6 +102,7 @@ async def upload_receipt(file : UploadFile = File(...), db: Session = Depends(ge
         message="File uploaded, processed, structured, validated and saved successfully.",
     )
 
+
 @router.get("/", response_model=PaginatedReceiptsResponse)
 def list_receipts(db: Session = Depends(get_db), skip: int = 0, limit: int = 20):
     """
@@ -75,6 +111,7 @@ def list_receipts(db: Session = Depends(get_db), skip: int = 0, limit: int = 20)
     receipts = get_receipts(db, skip=skip, limit=limit)
     total = count_receipts(db)
     return PaginatedReceiptsResponse(items=receipts, total=total, skip=skip, limit=limit)
+
 
 @router.get("/{receipt_id}", response_model=ReceiptDetail)
 def get_receipt_detail(receipt_id: int, db: Session = Depends(get_db)):
@@ -86,6 +123,7 @@ def get_receipt_detail(receipt_id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Receipt not found")
     return receipt
 
+
 @router.delete("/{receipt_id}", response_model=DeleteReceiptResponse)
 def delete_receipt_by_id(receipt_id: int, db: Session = Depends(get_db)):
     """
@@ -95,10 +133,8 @@ def delete_receipt_by_id(receipt_id: int, db: Session = Depends(get_db)):
     if not deleted_receipt:
         raise HTTPException(status_code=404, detail="Receipt not found.")
     delete_local_file(deleted_receipt.saved_path)
-    return DeleteReceiptResponse(
-        receipt_id=receipt_id,
-        message="Receipt deleted successfully"
-    )
+    return DeleteReceiptResponse(receipt_id=receipt_id, message="Receipt deleted successfully")
+
 
 @router.patch("/{receipt_id}/structured-data", response_model=ReceiptDetail)
 async def update_structured_data(

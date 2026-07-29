@@ -3,7 +3,8 @@ import uuid
 
 from fastapi import UploadFile
 
-async def save_uploaded_file(file: UploadFile, contents: bytes) -> str:
+
+def save_uploaded_file(file: UploadFile, contents: bytes) -> str:
     """
     Save already-read uploaded file content to the 'uploads' directory.
 
@@ -27,6 +28,7 @@ async def save_uploaded_file(file: UploadFile, contents: bytes) -> str:
         f.write(contents)
 
     return dest_path
+
 
 def delete_local_file(file_path: str) -> bool:
     """

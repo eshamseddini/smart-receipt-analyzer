@@ -1,5 +1,7 @@
-from app.services.extraction_service import extract_structured_data, extract_total_amount
-
+from app.services.extraction_service import (
+    extract_structured_data,
+    extract_total_amount,
+)
 
 CARREFOUR_NOISY_OCR_TEXT = """
 Se

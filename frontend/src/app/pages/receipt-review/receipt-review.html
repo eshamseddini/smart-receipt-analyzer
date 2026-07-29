@@ -1,195 +1,170 @@
 <section class="review-page">
   <div class="review-container">
-    <a class="back-link" [routerLink]="['/receipts', receipt?.id]">
-      ← Back to receipt
-    </a>
+    <a class="back-link" [routerLink]="['/receipts', receipt?.id]"> ← Back to receipt </a>
 
     <header class="review-hero">
       <div>
         <span class="eyebrow">Human review</span>
         <h1>Correct extracted data</h1>
         <p>
-          Edit the extracted products, prices, quantities, categories and totals.
-          The validation will be recalculated after saving.
+          Edit the extracted products, prices, quantities, categories and totals. The validation
+          will be recalculated after saving.
         </p>
       </div>
 
       <div class="review-summary">
         <span>Difference</span>
-        <strong>{{ difference | number:'1.2-2' }} EUR</strong>
+        <strong>{{ difference | number: '1.2-2' }} EUR</strong>
         <p>Items total vs expected total</p>
       </div>
     </header>
 
     @if (loading) {
-      <app-page-state
-        type="loading"
-        message="Loading review data..."
-      />
+      <app-page-state type="loading" message="Loading review data..." />
     }
 
     @if (errorMessage) {
-      <app-page-state
-        type="error"
-        [message]="errorMessage"
-      />
+      <app-page-state type="error" [message]="errorMessage" />
     }
 
     @if (successMessage) {
-      <app-page-state
-        type="success"
-        [message]="successMessage"
-      />
+      <app-page-state type="success" [message]="successMessage" />
     }
 
     @if (editableData) {
-    <section class="review-workspace">
+      <section class="review-workspace">
         <aside class="ticket-preview-panel">
-        <div class="preview-header">
+          <div class="preview-header">
             <div>
-            <span class="panel-kicker">Original document</span>
-            <h2>Ticket image</h2>
+              <span class="panel-kicker">Original document</span>
+              <h2>Ticket image</h2>
             </div>
-        </div>
+          </div>
 
-        @if (receiptImageUrl) {
+          @if (receiptImageUrl) {
             <div class="preview-toolbar">
-            <button type="button" (click)="zoomOut()">−</button>
+              <button type="button" (click)="zoomOut()">−</button>
 
-            <span>
-                {{ fitToWidth ? 'Fit width' : (zoomLevel * 100 | number:'1.0-0') + '%' }}
-            </span>
+              <span>
+                {{ fitToWidth ? 'Fit width' : (zoomLevel * 100 | number: '1.0-0') + '%' }}
+              </span>
 
-            <button type="button" (click)="zoomIn()">+</button>
+              <button type="button" (click)="zoomIn()">+</button>
 
-            <button type="button" (click)="resetZoom()">
-                Reset
-            </button>
+              <button type="button" (click)="resetZoom()">Reset</button>
             </div>
 
             <div class="ticket-image-frame">
-            <img
+              <img
                 [src]="receiptImageUrl"
                 [alt]="receipt?.original_filename || 'Receipt image'"
                 [style.width]="imageZoomStyle"
                 [class.zoomed]="!fitToWidth"
-            />
+              />
             </div>
-        } @else {
-            <div class="empty-preview">
-            No image preview available.
-            </div>
-        }
+          } @else {
+            <div class="empty-preview">No image preview available.</div>
+          }
         </aside>
 
         <main class="correction-panel">
-        <section class="totals-panel">
+          <section class="totals-panel">
             <label>
-            <span>Merchant name</span>
-            <input [(ngModel)]="editableData.merchant_name" />
+              <span>Merchant name</span>
+              <input [(ngModel)]="editableData.merchant_name" />
             </label>
 
             <label>
-            <span>Purchase date</span>
-            <input type="date" [(ngModel)]="editableData.purchase_date" />
+              <span>Purchase date</span>
+              <input type="date" [(ngModel)]="editableData.purchase_date" />
             </label>
 
             <label>
-            <span>Total paid</span>
-            <input
-                type="number"
-                step="0.01"
-                [(ngModel)]="editableData.total_amount"
-            />
+              <span>Total paid</span>
+              <input type="number" step="0.01" [(ngModel)]="editableData.total_amount" />
             </label>
 
             <label>
-            <span>Discount amount</span>
-            <input
-                type="number"
-                step="0.01"
-                [(ngModel)]="editableData.discount_amount"
-            />
+              <span>Discount amount</span>
+              <input type="number" step="0.01" [(ngModel)]="editableData.discount_amount" />
             </label>
-        </section>
+          </section>
 
-        <section class="balance-panel">
+          <section class="balance-panel">
             <article>
-            <span>Items total</span>
-            <strong>{{ itemsTotal | number:'1.2-2' }} EUR</strong>
+              <span>Items total</span>
+              <strong>{{ itemsTotal | number: '1.2-2' }} EUR</strong>
             </article>
 
             <article>
-            <span>Expected total</span>
-            <strong>{{ expectedTotal | number:'1.2-2' }} EUR</strong>
+              <span>Expected total</span>
+              <strong>{{ expectedTotal | number: '1.2-2' }} EUR</strong>
             </article>
 
             <article [class.warning]="difference > 0.05">
-            <span>Difference</span>
-            <strong>{{ difference | number:'1.2-2' }} EUR</strong>
+              <span>Difference</span>
+              <strong>{{ difference | number: '1.2-2' }} EUR</strong>
             </article>
-        </section>
+          </section>
 
-        <section class="items-editor">
+          <section class="items-editor">
             <div class="items-editor-header">
-            <div>
+              <div>
                 <span class="panel-kicker">Correction table</span>
                 <h2>Editable receipt items</h2>
                 <p>
-                Compare each line with the ticket image and correct product name,
-                category, quantity, unit price or total price.
+                  Compare each line with the ticket image and correct product name, category,
+                  quantity, unit price or total price.
                 </p>
-            </div>
+              </div>
 
-            <button type="button" class="add-button" (click)="addItem()">
-                + Add item
-            </button>
+              <button type="button" class="add-button" (click)="addItem()">+ Add item</button>
             </div>
 
             <div class="column-help">
-            <div>
+              <div>
                 <strong>Product</strong>
                 <span>Name detected by OCR.</span>
-            </div>
+              </div>
 
-            <div>
+              <div>
                 <strong>Category</strong>
                 <span>Used for analytics.</span>
-            </div>
+              </div>
 
-            <div>
+              <div>
                 <strong>Qty</strong>
                 <span>Quantity bought.</span>
-            </div>
+              </div>
 
-            <div>
+              <div>
                 <strong>Unit price</strong>
                 <span>Price per item.</span>
-            </div>
+              </div>
 
-            <div>
+              <div>
                 <strong>Total</strong>
                 <span>Final line amount.</span>
-            </div>
+              </div>
             </div>
 
             <div class="items-edit-table">
-            <div class="items-edit-header">
+              <div class="items-edit-header">
                 <span>Product name</span>
                 <span>Category</span>
                 <span>Quantity</span>
                 <span>Unit price</span>
                 <span>Line total</span>
                 <span>Action</span>
-            </div>
+              </div>
 
-            @for (item of editableData.items; track $index; let index = $index) {
+              @for (item of editableData.items; track $index; let index = $index) {
                 <article class="items-edit-row" #itemRow>
-                <label class="mobile-field-label">Product name</label>
-                <input [(ngModel)]="item.name" />
+                  <label class="mobile-field-label">Product name</label>
+                  <input [(ngModel)]="item.name" />
 
-                <label class="mobile-field-label">Category</label>
-                <select [(ngModel)]="item.category" (change)="recalculateTotals()">
+                  <label class="mobile-field-label">Category</label>
+                  <select [(ngModel)]="item.category" (change)="recalculateTotals()">
                     <option value="fruit">Fruit</option>
                     <option value="vegetable_herb">Vegetable Herb</option>
                     <option value="dairy">Dairy</option>
@@ -204,72 +179,63 @@
                     <option value="prepared_food">Prepared Food</option>
                     <option value="pet_food">Pet Food</option>
                     <option value="other">Other</option>
-                </select>
+                  </select>
 
-                <label class="mobile-field-label">Quantity</label>
-                <input
+                  <label class="mobile-field-label">Quantity</label>
+                  <input
                     type="number"
                     step="0.01"
                     [(ngModel)]="item.quantity"
                     (change)="recalculateItemTotal(item)"
-                />
+                  />
 
-                <label class="mobile-field-label">Unit price</label>
-                <input
+                  <label class="mobile-field-label">Unit price</label>
+                  <input
                     type="number"
                     step="0.01"
                     [(ngModel)]="item.unit_price"
                     (change)="recalculateItemTotal(item)"
-                />
+                  />
 
-                <label class="mobile-field-label">Line total</label>
-                <input
+                  <label class="mobile-field-label">Line total</label>
+                  <input
                     type="number"
                     step="0.01"
                     [(ngModel)]="item.total_price"
                     (change)="recalculateTotals()"
-                />
+                  />
 
-                <button
-                    type="button"
-                    class="remove-button"
-                    (click)="removeItem(index)"
-                >
+                  <button type="button" class="remove-button" (click)="removeItem(index)">
                     Delete
-                </button>
+                  </button>
                 </article>
-            }
+              }
             </div>
-        </section>
+          </section>
         </main>
-    </section>
+      </section>
 
-    <footer class="review-actions">
-        <a
-        class="secondary-button"
-        [routerLink]="['/receipts', receipt?.id]"
-        >
-        Cancel
-        </a>
+      <footer class="review-actions">
+        <a class="secondary-button" [routerLink]="['/receipts', receipt?.id]"> Cancel </a>
 
         <button
-        type="button"
-        class="primary-button"
-        [disabled]="saving"
-        (click)="saveCorrections()"
+          type="button"
+          class="primary-button"
+          [disabled]="saving"
+          (click)="saveCorrections()"
         >
-        {{ saving ? 'Saving...' : 'Save corrections' }}
+          {{ saving ? 'Saving...' : 'Save corrections' }}
         </button>
 
         <button
-        type="button"
-        class="primary-button dark"
-        [disabled]="saving"
-        (click)="saveAndReturn()"
+          type="button"
+          class="primary-button dark"
+          [disabled]="saving"
+          (click)="saveAndReturn()"
         >
-        Save and return
+          Save and return
         </button>
-    </footer>
+      </footer>
     }
   </div>
 </section>

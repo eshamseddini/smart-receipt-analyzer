@@ -1,7 +1,7 @@
 import pytest
 from fastapi import HTTPException
 
-from app.services.validation_service import validate_uploaded_file, validate_file_size
+from app.services.validation_service import validate_file_size, validate_uploaded_file
 
 
 class FakeUploadFile:

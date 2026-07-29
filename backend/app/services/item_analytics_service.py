@@ -11,7 +11,10 @@ def categorize_item(item_name: str) -> str:
         ("prepared_food", ["pizza", "sandwich", "quiche", "lasagne", "burger", "wrap", "veloute"]),
         ("snack_sweet", ["petit beurre", "nutella", "m&m", "mms", "chocolat", "biscuit"]),
         ("dairy", ["cr.uht", "uht", "lait", "yaourt", "fromage", "creme", "beurre"]),
-        ("carbohydrate", ["spaghetti", "pates", "riz", "pain", "baguette", "frite", "frites", "pdt"]),
+        (
+            "carbohydrate",
+            ["spaghetti", "pates", "riz", "pain", "baguette", "frite", "frites", "pdt"],
+        ),
         ("beverage", ["the", "cafe", "nescafe", "nesc", "jus", "soda", "eau"]),
         ("household", ["sac kraft", "papier", "sopalin", "mouchoir", "savon", "lessive"]),
         ("stationery", ["roller", "recharge", "effac"]),

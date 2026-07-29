@@ -1,7 +1,12 @@
 from sqlalchemy.orm import Session
 
 from app.models.receipt import Receipt
-from app.schemas.analytics_schema import AnalyticsChartsResponse, AnalyticsSummaryResponse, DocumentTypesStatsResponse, ValidationStatsResponse
+from app.schemas.analytics_schema import (
+    AnalyticsChartsResponse,
+    AnalyticsSummaryResponse,
+    DocumentTypesStatsResponse,
+    ValidationStatsResponse,
+)
 
 
 def get_analytics_summary(db: Session) -> AnalyticsSummaryResponse:
@@ -43,6 +48,7 @@ def get_analytics_summary(db: Session) -> AnalyticsSummaryResponse:
         invoice_documents=invoice_documents,
     )
 
+
 def get_document_types_stats(db: Session) -> DocumentTypesStatsResponse:
     """
     Retrieve document types statistics from the database.
@@ -66,6 +72,7 @@ def get_document_types_stats(db: Session) -> DocumentTypesStatsResponse:
         receipt=receipt_count,
         invoice=invoice_count,
     )
+
 
 def get_validation_stats(db: Session) -> ValidationStatsResponse:
     """
@@ -100,7 +107,8 @@ def get_validation_stats(db: Session) -> ValidationStatsResponse:
         without_warnings=without_warnings_count,
     )
 
-def get_charts_data(db: Session)-> AnalyticsChartsResponse:
+
+def get_charts_data(db: Session) -> AnalyticsChartsResponse:
     """
     Retrieve chart data for document types and validation status.
     """

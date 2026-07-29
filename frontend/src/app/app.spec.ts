@@ -21,7 +21,7 @@ describe('App', () => {
     await fixture.whenStable();
     const compiled = fixture.nativeElement as HTMLElement;
     expect(compiled.querySelector('.nav-brand strong')?.textContent).toContain(
-      'Smart Receipt Analyzer'
+      'Smart Receipt Analyzer',
     );
   });
 });

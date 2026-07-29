@@ -32,17 +32,13 @@ def create_receipt(
 
     return db_receipt
 
+
 def get_receipts(db: Session, skip: int = 0, limit: int = 50):
     """
     Retrieve a paginated list of receipts from the database, most recent first.
     """
-    return (
-        db.query(Receipt)
-        .order_by(Receipt.created_at.desc())
-        .offset(skip)
-        .limit(limit)
-        .all()
-    )
+    return db.query(Receipt).order_by(Receipt.created_at.desc()).offset(skip).limit(limit).all()
+
 
 def count_receipts(db: Session) -> int:
     """
@@ -50,13 +46,15 @@ def count_receipts(db: Session) -> int:
     """
     return db.query(Receipt).count()
 
+
 def get_receipt_by_id(db: Session, receipt_id: int):
     """
     Retrieve a receipt by its ID from the database.
     """
     return db.query(Receipt).filter(Receipt.id == receipt_id).first()
 
-def delete_receipt(db: Session, receipt_id: int)-> Receipt | None:
+
+def delete_receipt(db: Session, receipt_id: int) -> Receipt | None:
     """
     Delete a receipt by its ID from the database.
     """
@@ -66,6 +64,7 @@ def delete_receipt(db: Session, receipt_id: int)-> Receipt | None:
     db.delete(receipt)
     db.commit()
     return receipt
+
 
 def update_receipt_structured_data(
     db: Session,

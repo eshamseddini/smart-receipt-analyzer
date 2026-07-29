@@ -41,7 +41,13 @@ describe('ReceiptReview', () => {
   describe('totals calculations', () => {
     it('recalculates an item line total from quantity and unit price', () => {
       component.editableData = makeEditableData();
-      const item = { name: 'Milk', unit_price: 1.5, quantity: 2, total_price: 0, category: 'dairy' };
+      const item = {
+        name: 'Milk',
+        unit_price: 1.5,
+        quantity: 2,
+        total_price: 0,
+        category: 'dairy',
+      };
 
       component.recalculateItemTotal(item);
 

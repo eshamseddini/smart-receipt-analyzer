@@ -91,7 +91,7 @@
 }
 
 .detail-hero::after {
-  content: "";
+  content: '';
   position: absolute;
   right: 260px;
   top: -90px;
@@ -431,8 +431,7 @@ li {
 .category-summary {
   margin-bottom: 24px;
   padding: 28px;
-  background:
-    linear-gradient(135deg, rgba(255, 255, 255, 0.96), rgba(248, 251, 255, 0.92));
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.96), rgba(248, 251, 255, 0.92));
   border: 1px solid var(--color-border);
   border-radius: var(--radius-xl);
   box-shadow: var(--shadow-card);
@@ -675,19 +674,19 @@ li {
   }
 
   .items-row span:nth-child(2)::before {
-    content: "Category";
+    content: 'Category';
   }
 
   .items-row span:nth-child(3)::before {
-    content: "Quantity";
+    content: 'Quantity';
   }
 
   .items-row span:nth-child(4)::before {
-    content: "Unit price";
+    content: 'Unit price';
   }
 
   .items-row > strong::before {
-    content: "Total";
+    content: 'Total';
     color: var(--color-text-muted);
     font-size: 12px;
     font-weight: 900;

@@ -24,51 +24,37 @@ export class AnalyticsService {
   constructor(private http: HttpClient) {}
 
   getAnalyticsSummary(): Observable<AnalyticsSummary> {
-    return this.http.get<AnalyticsSummary>(
-      `${this.baseUrl}/api/analytics/summary`
-    );
+    return this.http.get<AnalyticsSummary>(`${this.baseUrl}/api/analytics/summary`);
   }
 
   getDocumentTypes(): Observable<DocumentTypesStats> {
-    return this.http.get<DocumentTypesStats>(
-      `${this.baseUrl}/api/analytics/document-types`
-    );
+    return this.http.get<DocumentTypesStats>(`${this.baseUrl}/api/analytics/document-types`);
   }
 
   getValidationStats(): Observable<ValidationStats> {
-    return this.http.get<ValidationStats>(
-      `${this.baseUrl}/api/analytics/validation`
-    );
+    return this.http.get<ValidationStats>(`${this.baseUrl}/api/analytics/validation`);
   }
 
   getChartsData(): Observable<AnalyticsCharts> {
-    return this.http.get<AnalyticsCharts>(
-      `${this.baseUrl}/api/analytics/charts`
-    );
+    return this.http.get<AnalyticsCharts>(`${this.baseUrl}/api/analytics/charts`);
   }
 
   getMerchantSpending(): Observable<MerchantSpendingItem[]> {
-    return this.http.get<MerchantSpendingItem[]>(
-      `${this.baseUrl}/api/analytics/merchant-spending`
-    );
+    return this.http.get<MerchantSpendingItem[]>(`${this.baseUrl}/api/analytics/merchant-spending`);
   }
 
   getMonthlySpending(): Observable<MonthlySpendingItem[]> {
-    return this.http.get<MonthlySpendingItem[]>(
-      `${this.baseUrl}/api/analytics/monthly-spending`
-    );
+    return this.http.get<MonthlySpendingItem[]>(`${this.baseUrl}/api/analytics/monthly-spending`);
   }
 
   getTopProducts(limit = 10): Observable<TopProductItem[]> {
     return this.http.get<TopProductItem[]>(
-      `${this.baseUrl}/api/analytics/top-products?limit=${limit}`
+      `${this.baseUrl}/api/analytics/top-products?limit=${limit}`,
     );
   }
 
   getCategorySpending(): Observable<CategorySpendingItem[]> {
-    return this.http.get<CategorySpendingItem[]>(
-      `${this.baseUrl}/api/analytics/category-spending`
-    );
+    return this.http.get<CategorySpendingItem[]>(`${this.baseUrl}/api/analytics/category-spending`);
   }
 
   getInsights(params: {
@@ -87,7 +73,7 @@ export class AnalyticsService {
     });
 
     return this.http.get<AnalyticsInsightsResponse>(
-      `${this.baseUrl}/api/analytics/insights?${queryParams.toString()}`
+      `${this.baseUrl}/api/analytics/insights?${queryParams.toString()}`,
     );
   }
 }

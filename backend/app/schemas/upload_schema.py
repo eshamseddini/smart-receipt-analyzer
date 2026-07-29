@@ -7,12 +7,13 @@ class UploadReceiptResponse(BaseModel):
     """
     Response model for the upload receipt endpoint.
     """
+
     receipt_id: int
     filename: str
     content_type: str
     saved_path: str
-    extracted_text: str 
+    extracted_text: str
     document_type: str | None
-    structured_data: ExtractedReceiptData 
-    validation_result: ValidationResult 
+    structured_data: ExtractedReceiptData
+    validation_result: ValidationResult
     message: str

@@ -8,11 +8,11 @@ import {
   ExtractedReceiptData,
   PaginatedReceipts,
   ReceiptDetail,
-  UploadReceiptResponse
+  UploadReceiptResponse,
 } from '../models/receipt.model';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class ReceiptService {
   private readonly baseUrl = API_BASE_URL;
@@ -33,27 +33,19 @@ export class ReceiptService {
     const formData = new FormData();
     formData.append('file', file);
 
-    return this.http.post<UploadReceiptResponse>(
-      `${this.baseUrl}/api/receipts/upload`,
-      formData
-    );
+    return this.http.post<UploadReceiptResponse>(`${this.baseUrl}/api/receipts/upload`, formData);
   }
 
   deleteReceipt(id: number): Observable<DeleteReceiptResponse> {
-    return this.http.delete<DeleteReceiptResponse>(
-      `${this.baseUrl}/api/receipts/${id}`
-    );
+    return this.http.delete<DeleteReceiptResponse>(`${this.baseUrl}/api/receipts/${id}`);
   }
 
   updateStructuredData(
     id: number,
-    structuredData: ExtractedReceiptData
+    structuredData: ExtractedReceiptData,
   ): Observable<ReceiptDetail> {
-    return this.http.patch<ReceiptDetail>(
-      `${this.baseUrl}/api/receipts/${id}/structured-data`,
-      {
-        structured_data: structuredData,
-      }
-    );
+    return this.http.patch<ReceiptDetail>(`${this.baseUrl}/api/receipts/${id}/structured-data`, {
+      structured_data: structuredData,
+    });
   }
 }

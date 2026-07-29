@@ -21,7 +21,7 @@ export class ReceiptDetailComponent implements OnInit {
   constructor(
     private route: ActivatedRoute,
     private receiptService: ReceiptService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
   ) {}
 
   ngOnInit(): void {
@@ -52,7 +52,7 @@ export class ReceiptDetailComponent implements OnInit {
         finalize(() => {
           this.loading = false;
           this.cdr.detectChanges();
-        })
+        }),
       )
       .subscribe({
         next: (data) => {
@@ -68,12 +68,10 @@ export class ReceiptDetailComponent implements OnInit {
       return [];
     }
 
-    return Object.entries(this.receipt.structured_data.category_totals).map(
-      ([name, amount]) => ({
-        name: this.formatCategoryName(name),
-        amount,
-      })
-    );
+    return Object.entries(this.receipt.structured_data.category_totals).map(([name, amount]) => ({
+      name: this.formatCategoryName(name),
+      amount,
+    }));
   }
 
   formatCategoryName(category: string): string {

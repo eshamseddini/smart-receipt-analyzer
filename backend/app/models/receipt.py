@@ -1,6 +1,9 @@
-from datetime import timezone,datetime
-from sqlalchemy import Column, Integer, String, DateTime, Text, JSON
+from datetime import datetime, timezone
+
+from sqlalchemy import JSON, Column, DateTime, Integer, String, Text
+
 from app.db.database import Base
+
 
 class Receipt(Base):
     __tablename__ = "receipts"
@@ -13,7 +16,4 @@ class Receipt(Base):
     document_type = Column(String, nullable=True)
     structured_data = Column(JSON, nullable=True)
     validation_result = Column(JSON, nullable=True)
-    created_at = Column(
-        DateTime(timezone=True),
-        default=lambda: datetime.now(timezone.utc)
-    )
+    created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))

@@ -1,13 +1,16 @@
-import { ChangeDetectorRef, Component, ElementRef, OnInit, QueryList, ViewChildren } from '@angular/core';
+import {
+  ChangeDetectorRef,
+  Component,
+  ElementRef,
+  OnInit,
+  QueryList,
+  ViewChildren,
+} from '@angular/core';
 import { DecimalPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 
-import {
-  ExtractedReceiptData,
-  ReceiptDetail,
-  ReceiptItem,
-} from '../../core/models/receipt.model';
+import { ExtractedReceiptData, ReceiptDetail, ReceiptItem } from '../../core/models/receipt.model';
 import { ReceiptService } from '../../core/services/receipt.service';
 import { PageState } from '../../shared/components/page-state/page-state';
 import { API_BASE_URL } from '../../core/constants/api.constants';
@@ -36,7 +39,7 @@ export class ReceiptReview implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private receiptService: ReceiptService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
   ) {}
 
   ngOnInit(): void {
@@ -122,9 +125,7 @@ export class ReceiptReview implements OnInit {
       const category = item.category || 'other';
       const total = Number(item.total_price || 0);
 
-      categoryTotals[category] = Number(
-        ((categoryTotals[category] || 0) + total).toFixed(2)
-      );
+      categoryTotals[category] = Number(((categoryTotals[category] || 0) + total).toFixed(2));
     }
 
     this.editableData.category_totals = categoryTotals;
@@ -135,7 +136,7 @@ export class ReceiptReview implements OnInit {
 
     return this.editableData.items.reduce(
       (total, item) => total + Number(item.total_price || 0),
-      0
+      0,
     );
   }
 
@@ -161,22 +162,20 @@ export class ReceiptReview implements OnInit {
 
     this.recalculateTotals();
 
-    this.receiptService
-      .updateStructuredData(this.receipt.id, this.editableData)
-      .subscribe({
-        next: (updatedReceipt) => {
-          this.receipt = updatedReceipt;
-          this.editableData = structuredClone(updatedReceipt.structured_data);
-          this.successMessage = 'Corrections saved successfully.';
-          this.saving = false;
-          this.cdr.detectChanges();
-        },
-        error: () => {
-          this.errorMessage = 'Unable to save corrections.';
-          this.saving = false;
-          this.cdr.detectChanges();
-        },
-      });
+    this.receiptService.updateStructuredData(this.receipt.id, this.editableData).subscribe({
+      next: (updatedReceipt) => {
+        this.receipt = updatedReceipt;
+        this.editableData = structuredClone(updatedReceipt.structured_data);
+        this.successMessage = 'Corrections saved successfully.';
+        this.saving = false;
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.errorMessage = 'Unable to save corrections.';
+        this.saving = false;
+        this.cdr.detectChanges();
+      },
+    });
   }
 
   saveAndReturn(): void {
@@ -187,20 +186,18 @@ export class ReceiptReview implements OnInit {
 
     this.recalculateTotals();
 
-    this.receiptService
-      .updateStructuredData(this.receipt.id, this.editableData)
-      .subscribe({
-        next: () => {
-          this.router.navigate(['/receipts', this.receipt?.id]);
-        },
-        error: () => {
-          this.errorMessage = 'Unable to save corrections.';
-          this.saving = false;
-          this.cdr.detectChanges();
-        },
-      });
+    this.receiptService.updateStructuredData(this.receipt.id, this.editableData).subscribe({
+      next: () => {
+        this.router.navigate(['/receipts', this.receipt?.id]);
+      },
+      error: () => {
+        this.errorMessage = 'Unable to save corrections.';
+        this.saving = false;
+        this.cdr.detectChanges();
+      },
+    });
   }
-  
+
   get receiptImageUrl(): string {
     if (!this.receipt?.saved_path) return '';
 

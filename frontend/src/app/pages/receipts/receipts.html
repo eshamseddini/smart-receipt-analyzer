@@ -7,8 +7,8 @@
         <h1>Receipts Library</h1>
 
         <p>
-          Upload receipts and invoices, run OCR extraction, validate structured data,
-          and manage every processed document from one clean workspace.
+          Upload receipts and invoices, run OCR extraction, validate structured data, and manage
+          every processed document from one clean workspace.
         </p>
 
         <div class="hero-meta">
@@ -38,11 +38,7 @@
 
       <div class="upload-actions">
         <label class="file-input">
-          <input
-            type="file"
-            accept=".pdf,.png,.jpg,.jpeg"
-            (change)="onFileSelected($event)"
-          />
+          <input type="file" accept=".pdf,.png,.jpg,.jpeg" (change)="onFileSelected($event)" />
 
           <span>
             {{ selectedFile ? selectedFile.name : 'Choose file' }}
@@ -74,10 +70,7 @@
     </section>
 
     @if (loading) {
-      <app-page-state
-        type="loading"
-        message="Loading receipts..."
-      />
+      <app-page-state type="loading" message="Loading receipts..." />
     }
 
     @if (!loading && totalReceipts === 0) {
@@ -87,8 +80,8 @@
         <h2>No receipts uploaded yet</h2>
 
         <p>
-          Upload your first receipt to test OCR extraction, document classification,
-          JSON validation, and database storage.
+          Upload your first receipt to test OCR extraction, document classification, JSON
+          validation, and database storage.
         </p>
       </section>
     }
@@ -202,13 +195,11 @@
               </span>
 
               <span class="muted">
-                {{ receipt.created_at | date:'medium' }}
+                {{ receipt.created_at | date: 'medium' }}
               </span>
 
               <div class="row-actions">
-                <a class="view-button" [routerLink]="['/receipts', receipt.id]">
-                  View
-                </a>
+                <a class="view-button" [routerLink]="['/receipts', receipt.id]"> View </a>
 
                 <app-action-button
                   label="Delete"
@@ -221,9 +212,7 @@
           }
         </div>
         @if (filteredReceipts.length === 0 && receipts.length > 0) {
-          <div class="empty-filter">
-            No document matches your current filters.
-          </div>
+          <div class="empty-filter">No document matches your current filters.</div>
         }
 
         @if (totalPages > 1) {
@@ -237,9 +226,7 @@
               Previous
             </button>
 
-            <span class="pagination-status">
-              Page {{ currentPage }} of {{ totalPages }}
-            </span>
+            <span class="pagination-status"> Page {{ currentPage }} of {{ totalPages }} </span>
 
             <button
               type="button"
@@ -258,17 +245,15 @@
   @if (showDeleteModal) {
     <div class="modal-backdrop">
       <div class="confirm-modal">
-        <div class="modal-icon">
-          !
-        </div>
+        <div class="modal-icon">!</div>
 
         <span class="modal-kicker">Danger zone</span>
 
         <h2>Delete this receipt?</h2>
 
         <p>
-          This action will remove the database record and delete the uploaded file
-          from local storage. This cannot be undone.
+          This action will remove the database record and delete the uploaded file from local
+          storage. This cannot be undone.
         </p>
 
         <div class="modal-actions">

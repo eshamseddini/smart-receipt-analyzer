@@ -1,6 +1,5 @@
 from app.schemas.receipt_schema import ExtractedReceiptData, ValidationResult
 
-
 SUPPORTED_CURRENCIES = {"EUR", "USD", "GBP"}
 
 

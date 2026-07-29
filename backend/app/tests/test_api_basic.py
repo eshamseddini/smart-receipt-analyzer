@@ -2,7 +2,6 @@ from fastapi.testclient import TestClient
 
 from app.main import app
 
-
 client = TestClient(app)
 
 
@@ -61,6 +60,7 @@ def test_get_charts_data():
     assert isinstance(data["document_types"], list)
     assert isinstance(data["validation_status"], list)
 
+
 def test_get_receipts_list():
     response = client.get("/api/receipts/")
 
@@ -99,6 +99,7 @@ def test_get_analytics_insights():
     assert "merchants" in data["filter_options"]
     assert "categories" in data["filter_options"]
 
+
 def test_upload_invalid_file_type():
     files = {
         "file": (
@@ -111,6 +112,7 @@ def test_upload_invalid_file_type():
     response = client.post("/api/receipts/upload", files=files)
 
     assert response.status_code == 400
+
 
 def test_upload_valid_png_file_with_unknown_content_is_rejected():
     png_content = (
@@ -143,3 +145,23 @@ def test_upload_valid_png_file_with_unknown_content_is_rejected():
     assert "message" in data["detail"]
     assert "Unsupported merchant" in data["detail"]["message"]
     assert data["detail"]["document_type"] == "unknown"
+
+
+def test_upload_corrupted_image_returns_clean_422_instead_of_500():
+    files = {
+        "file": (
+            "corrupted.png",
+            b"not actually a png file, just random bytes",
+            "image/png",
+        )
+    }
+
+    response = client.post("/api/receipts/upload", files=files)
+
+    assert response.status_code == 422
+
+    data = response.json()
+
+    assert "detail" in data
+    assert "message" in data["detail"]
+    assert "Unable to read this file" in data["detail"]["message"]

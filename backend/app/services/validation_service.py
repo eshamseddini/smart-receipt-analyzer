@@ -23,14 +23,22 @@ def validate_uploaded_file(file: UploadFile) -> str:
         HTTPException: If the file is not uploaded or has an invalid type.
     """
     if file is None or file.filename == "":
-        raise HTTPException(status_code=400, detail="No file uploaded. Please upload a PDF, PNG, JPG, or JPEG file.")
+        raise HTTPException(
+            status_code=400, detail="No file uploaded. Please upload a PDF, PNG, JPG, or JPEG file."
+        )
 
     extension = file.filename.split(".")[-1].lower()
     if extension == "":
-        raise HTTPException(status_code=400, detail="File has no extension. Please upload a PDF, PNG, JPG, or JPEG file.")
+        raise HTTPException(
+            status_code=400,
+            detail="File has no extension. Please upload a PDF, PNG, JPG, or JPEG file.",
+        )
 
     if extension not in ALLOWED_EXTENSIONS:
-        raise HTTPException(status_code=400, detail="Invalid file type. Please upload a PDF, PNG, JPG, or JPEG file.")
+        raise HTTPException(
+            status_code=400,
+            detail="Invalid file type. Please upload a PDF, PNG, JPG, or JPEG file.",
+        )
 
     expected_mime_types = ALLOWED_MIME_TYPES_BY_EXTENSION[extension]
     if file.content_type not in expected_mime_types:

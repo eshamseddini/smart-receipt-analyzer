@@ -1,24 +1,18 @@
 <section class="detail-page">
   <div class="detail-container">
     <div class="detail-actions">
-        <a class="back-link" routerLink="/receipts">
-            <span>←</span>
-            Back to receipts
-        </a>
-        </div>
+      <a class="back-link" routerLink="/receipts">
+        <span>←</span>
+        Back to receipts
+      </a>
+    </div>
 
     @if (loading) {
-    <app-page-state
-        type="loading"
-        message="Loading receipt details..."
-    />
+      <app-page-state type="loading" message="Loading receipt details..." />
     }
 
     @if (errorMessage) {
-    <app-page-state
-        type="error"
-        [message]="errorMessage"
-    />
+      <app-page-state type="error" [message]="errorMessage" />
     }
 
     @if (receipt) {
@@ -29,13 +23,13 @@
           <h1>{{ receipt.original_filename }}</h1>
 
           <p>
-            Review the complete processing result: OCR text, document classification,
-            structured JSON extraction, and validation feedback.
+            Review the complete processing result: OCR text, document classification, structured
+            JSON extraction, and validation feedback.
           </p>
 
           <div class="hero-tags">
             <span>{{ receipt.content_type }}</span>
-            <span>{{ receipt.created_at | date:'medium' }}</span>
+            <span>{{ receipt.created_at | date: 'medium' }}</span>
             <span>{{ receipt.document_type || 'Unknown' }}</span>
           </div>
         </div>
@@ -85,93 +79,93 @@
 
         <article class="meta-card">
           <span>Created at</span>
-          <strong>{{ receipt.created_at | date:'short' }}</strong>
+          <strong>{{ receipt.created_at | date: 'short' }}</strong>
         </article>
       </section>
       @if (categoryTotals.length > 0) {
-  <section class="category-summary">
-    <div class="category-summary-header">
-      <div>
-        <span class="panel-kicker">Analytics</span>
-        <h2>Spending by category</h2>
-        <p>Quick breakdown based on the extracted receipt items.</p>
-      </div>
+        <section class="category-summary">
+          <div class="category-summary-header">
+            <div>
+              <span class="panel-kicker">Analytics</span>
+              <h2>Spending by category</h2>
+              <p>Quick breakdown based on the extracted receipt items.</p>
+            </div>
 
-      <div class="summary-total">
-        <span>Total paid</span>
-        <strong>
-          {{ receipt.structured_data?.total_amount | number:'1.2-2' }}
-          {{ receipt.structured_data?.currency || 'EUR' }}
-        </strong>
-      </div>
-    </div>
-
-    <div class="category-grid">
-      @for (category of categoryTotals; track category.name) {
-        <article class="category-card">
-          <div class="category-icon">
-            {{ category.name.charAt(0) }}
+            <div class="summary-total">
+              <span>Total paid</span>
+              <strong>
+                {{ receipt.structured_data?.total_amount | number: '1.2-2' }}
+                {{ receipt.structured_data?.currency || 'EUR' }}
+              </strong>
+            </div>
           </div>
 
-          <div>
-            <span>{{ category.name }}</span>
-            <strong>
-              {{ category.amount | number:'1.2-2' }}
-              {{ receipt.structured_data?.currency || 'EUR' }}
-            </strong>
+          <div class="category-grid">
+            @for (category of categoryTotals; track category.name) {
+              <article class="category-card">
+                <div class="category-icon">
+                  {{ category.name.charAt(0) }}
+                </div>
+
+                <div>
+                  <span>{{ category.name }}</span>
+                  <strong>
+                    {{ category.amount | number: '1.2-2' }}
+                    {{ receipt.structured_data?.currency || 'EUR' }}
+                  </strong>
+                </div>
+              </article>
+            }
           </div>
-        </article>
+        </section>
       }
-    </div>
-  </section>
-}
-  @if (extractedItems.length > 0) {
-  <section class="items-panel">
-    <div class="items-header">
-      <div>
-        <span class="panel-kicker">Extracted items</span>
-        <h2>Receipt products</h2>
-        <p>Products detected from the OCR text and enriched with categories.</p>
-      </div>
-    </div>
-
-    <div class="items-table">
-      <div class="items-table-header">
-        <span>Product</span>
-        <span>Category</span>
-        <span>Quantity</span>
-        <span>Unit price</span>
-        <span>Total</span>
-      </div>
-
-      @for (item of extractedItems; track item.name) {
-        <article class="items-row">
-          <div class="item-name">
-            <strong>{{ item.name }}</strong>
+      @if (extractedItems.length > 0) {
+        <section class="items-panel">
+          <div class="items-header">
+            <div>
+              <span class="panel-kicker">Extracted items</span>
+              <h2>Receipt products</h2>
+              <p>Products detected from the OCR text and enriched with categories.</p>
+            </div>
           </div>
 
-          <span class="item-category">
-            {{ item.category ? formatCategoryName(item.category) : 'Other' }}
-          </span>
+          <div class="items-table">
+            <div class="items-table-header">
+              <span>Product</span>
+              <span>Category</span>
+              <span>Quantity</span>
+              <span>Unit price</span>
+              <span>Total</span>
+            </div>
 
-          <span>
-            {{ item.quantity || 1 }}
-          </span>
+            @for (item of extractedItems; track item.name) {
+              <article class="items-row">
+                <div class="item-name">
+                  <strong>{{ item.name }}</strong>
+                </div>
 
-          <span>
-            {{ item.unit_price | number:'1.2-2' }}
-            {{ receipt.structured_data?.currency || 'EUR' }}
-          </span>
+                <span class="item-category">
+                  {{ item.category ? formatCategoryName(item.category) : 'Other' }}
+                </span>
 
-          <strong>
-            {{ item.total_price | number:'1.2-2' }}
-            {{ receipt.structured_data?.currency || 'EUR' }}
-          </strong>
-        </article>
+                <span>
+                  {{ item.quantity || 1 }}
+                </span>
+
+                <span>
+                  {{ item.unit_price | number: '1.2-2' }}
+                  {{ receipt.structured_data?.currency || 'EUR' }}
+                </span>
+
+                <strong>
+                  {{ item.total_price | number: '1.2-2' }}
+                  {{ receipt.structured_data?.currency || 'EUR' }}
+                </strong>
+              </article>
+            }
+          </div>
+        </section>
       }
-    </div>
-  </section>
-}
       <section class="analysis-grid">
         <article class="panel ocr-panel">
           <div class="panel-header">
@@ -206,10 +200,7 @@
               <h2>Validation feedback</h2>
             </div>
 
-            <span
-              class="validation-pill"
-              [class.valid]="receipt.validation_result?.is_valid"
-            >
+            <span class="validation-pill" [class.valid]="receipt.validation_result?.is_valid">
               {{ receipt.validation_result?.is_valid ? 'Valid' : 'Invalid' }}
             </span>
           </div>

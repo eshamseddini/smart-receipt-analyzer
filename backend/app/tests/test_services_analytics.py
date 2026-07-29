@@ -18,21 +18,27 @@ class FakeReceipt:
 
 def test_build_merchant_spending_groups_by_merchant():
     receipts = [
-        FakeReceipt({
-            "merchant_name": "LIDL",
-            "total_amount": 20.0,
-            "items": [],
-        }),
-        FakeReceipt({
-            "merchant_name": "LIDL",
-            "total_amount": 10.0,
-            "items": [],
-        }),
-        FakeReceipt({
-            "merchant_name": "ACTION",
-            "total_amount": 15.0,
-            "items": [],
-        }),
+        FakeReceipt(
+            {
+                "merchant_name": "LIDL",
+                "total_amount": 20.0,
+                "items": [],
+            }
+        ),
+        FakeReceipt(
+            {
+                "merchant_name": "LIDL",
+                "total_amount": 10.0,
+                "items": [],
+            }
+        ),
+        FakeReceipt(
+            {
+                "merchant_name": "ACTION",
+                "total_amount": 15.0,
+                "items": [],
+            }
+        ),
     ]
 
     result = build_merchant_spending(receipts)
@@ -89,13 +95,15 @@ def test_build_monthly_spending_groups_by_month():
 
 def test_build_category_spending_groups_product_lines():
     receipts = [
-        FakeReceipt({
-            "items": [
-                {"name": "Milk", "category": "dairy", "total_price": 2.5},
-                {"name": "Cheese", "category": "dairy", "total_price": 3.5},
-                {"name": "Apple", "category": "fruit", "total_price": 4.0},
-            ]
-        })
+        FakeReceipt(
+            {
+                "items": [
+                    {"name": "Milk", "category": "dairy", "total_price": 2.5},
+                    {"name": "Cheese", "category": "dairy", "total_price": 3.5},
+                    {"name": "Apple", "category": "fruit", "total_price": 4.0},
+                ]
+            }
+        )
     ]
 
     result = build_category_spending(receipts)
@@ -109,12 +117,14 @@ def test_build_category_spending_groups_product_lines():
 
 def test_build_category_spending_can_filter_selected_category():
     receipts = [
-        FakeReceipt({
-            "items": [
-                {"name": "Milk", "category": "dairy", "total_price": 2.5},
-                {"name": "Apple", "category": "fruit", "total_price": 4.0},
-            ]
-        })
+        FakeReceipt(
+            {
+                "items": [
+                    {"name": "Milk", "category": "dairy", "total_price": 2.5},
+                    {"name": "Apple", "category": "fruit", "total_price": 4.0},
+                ]
+            }
+        )
     ]
 
     result = build_category_spending(receipts, selected_category="fruit")
@@ -129,28 +139,30 @@ def test_build_category_spending_can_filter_selected_category():
 
 def test_build_top_products_groups_same_product_name():
     receipts = [
-        FakeReceipt({
-            "items": [
-                {
-                    "name": "Milk",
-                    "category": "dairy",
-                    "quantity": 1,
-                    "total_price": 2.5,
-                },
-                {
-                    "name": "milk",
-                    "category": "dairy",
-                    "quantity": 2,
-                    "total_price": 5.0,
-                },
-                {
-                    "name": "Apple",
-                    "category": "fruit",
-                    "quantity": 1,
-                    "total_price": 4.0,
-                },
-            ]
-        })
+        FakeReceipt(
+            {
+                "items": [
+                    {
+                        "name": "Milk",
+                        "category": "dairy",
+                        "quantity": 1,
+                        "total_price": 2.5,
+                    },
+                    {
+                        "name": "milk",
+                        "category": "dairy",
+                        "quantity": 2,
+                        "total_price": 5.0,
+                    },
+                    {
+                        "name": "Apple",
+                        "category": "fruit",
+                        "quantity": 1,
+                        "total_price": 4.0,
+                    },
+                ]
+            }
+        )
     ]
 
     result = build_top_products(receipts)
@@ -163,20 +175,24 @@ def test_build_top_products_groups_same_product_name():
 
 def test_build_filter_options_returns_unique_sorted_values():
     receipts = [
-        FakeReceipt({
-            "merchant_name": "LIDL",
-            "items": [
-                {"category": "dairy"},
-                {"category": "fruit"},
-            ],
-        }),
-        FakeReceipt({
-            "merchant_name": "ACTION",
-            "items": [
-                {"category": "household"},
-                {"category": "dairy"},
-            ],
-        }),
+        FakeReceipt(
+            {
+                "merchant_name": "LIDL",
+                "items": [
+                    {"category": "dairy"},
+                    {"category": "fruit"},
+                ],
+            }
+        ),
+        FakeReceipt(
+            {
+                "merchant_name": "ACTION",
+                "items": [
+                    {"category": "household"},
+                    {"category": "dairy"},
+                ],
+            }
+        ),
     ]
 
     result = build_filter_options(receipts)
@@ -189,12 +205,14 @@ def test_build_filter_options_returns_unique_sorted_values():
 
 def test_build_data_quality_returns_score_and_counts():
     receipts = [
-        FakeReceipt({
-            "items": [
-                {"name": "Milk", "category": "dairy", "total_price": 2.5},
-                {"name": "Apple", "category": "fruit", "total_price": 4.0},
-            ]
-        })
+        FakeReceipt(
+            {
+                "items": [
+                    {"name": "Milk", "category": "dairy", "total_price": 2.5},
+                    {"name": "Apple", "category": "fruit", "total_price": 4.0},
+                ]
+            }
+        )
     ]
 
     merchant_spending = [

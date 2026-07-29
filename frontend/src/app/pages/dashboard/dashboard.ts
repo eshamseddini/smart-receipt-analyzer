@@ -1,7 +1,12 @@
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { forkJoin } from 'rxjs';
 import { AnalyticsService } from '../../core/services/analytics.service';
-import { AnalyticsCharts, AnalyticsSummary, DocumentTypesStats, ValidationStats } from '../../core/models/analytics.model';
+import {
+  AnalyticsCharts,
+  AnalyticsSummary,
+  DocumentTypesStats,
+  ValidationStats,
+} from '../../core/models/analytics.model';
 import { RouterLink } from '@angular/router';
 import { BarChart } from '../../shared/components/bar-chart/bar-chart';
 import { StatCard } from '../../shared/components/stat-card/stat-card';
@@ -24,9 +29,9 @@ export class Dashboard implements OnInit {
 
   constructor(
     private analyticsService: AnalyticsService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
   ) {}
-  
+
   ngOnInit(): void {
     this.loadDashboardData();
   }

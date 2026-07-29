@@ -9,7 +9,7 @@
 }
 
 .kpi-card::after {
-  content: "";
+  content: '';
   position: absolute;
   right: -40px;
   top: -40px;

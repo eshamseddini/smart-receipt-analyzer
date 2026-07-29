@@ -40,8 +40,6 @@ class TesseractOCR(BaseOCR):
             text = pytesseract.image_to_string(page)
 
             if text.strip():
-                extracted_pages.append(
-                    f"--- Page {page_number} ---\n{text.strip()}"
-                )
+                extracted_pages.append(f"--- Page {page_number} ---\n{text.strip()}")
 
         return "\n\n".join(extracted_pages).strip()

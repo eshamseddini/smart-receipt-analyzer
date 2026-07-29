@@ -1,5 +1,7 @@
-from pydantic import BaseModel, ConfigDict, Field
 from datetime import datetime
+
+from pydantic import BaseModel, ConfigDict, Field
+
 
 class ReceiptItem(BaseModel):
     name: str
@@ -7,6 +9,7 @@ class ReceiptItem(BaseModel):
     quantity: float | None = None
     total_price: float | None = None
     category: str | None = None
+
 
 class ExtractedReceiptData(BaseModel):
     merchant_name: str | None = None
@@ -17,24 +20,28 @@ class ExtractedReceiptData(BaseModel):
     category_totals: dict[str, float] = Field(default_factory=dict)
     items: list[ReceiptItem] = Field(default_factory=list)
 
+
 class ValidationResult(BaseModel):
     is_valid: bool
     errors: list[str] = Field(default_factory=list)
     warnings: list[str] = Field(default_factory=list)
+
 
 class ReceiptListItem(BaseModel):
     id: int
     original_filename: str
     content_type: str
     saved_path: str
-    document_type: str | None 
+    document_type: str | None
     created_at: datetime
     model_config = ConfigDict(from_attributes=True)  # Enable ORM mode for SQLAlchemy models
 
+
 class ReceiptDetail(ReceiptListItem):
     extracted_text: str | None
-    structured_data: ExtractedReceiptData | None   
+    structured_data: ExtractedReceiptData | None
     validation_result: ValidationResult | None
+
 
 class PaginatedReceiptsResponse(BaseModel):
     items: list[ReceiptListItem]
@@ -42,9 +49,11 @@ class PaginatedReceiptsResponse(BaseModel):
     skip: int
     limit: int
 
+
 class DeleteReceiptResponse(BaseModel):
     receipt_id: int
     message: str
+
 
 class UpdateReceiptStructuredDataRequest(BaseModel):
     structured_data: ExtractedReceiptData

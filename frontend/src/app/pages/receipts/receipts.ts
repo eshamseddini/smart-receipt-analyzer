@@ -41,7 +41,7 @@ export class Receipts implements OnInit {
   constructor(
     private receiptService: ReceiptService,
     private cdr: ChangeDetectorRef,
-    private router: Router
+    private router: Router,
   ) {}
 
   ngOnInit(): void {
@@ -60,7 +60,7 @@ export class Receipts implements OnInit {
         finalize(() => {
           this.loading = false;
           this.cdr.detectChanges();
-        })
+        }),
       )
       .subscribe({
         next: (data) => {
@@ -123,7 +123,7 @@ export class Receipts implements OnInit {
         finalize(() => {
           this.uploading = false;
           this.cdr.detectChanges();
-        })
+        }),
       )
       .subscribe({
         next: (response) => {
@@ -166,8 +166,7 @@ export class Receipts implements OnInit {
         documentType.includes(term);
 
       const matchesType =
-        this.selectedDocumentType === 'all' ||
-        documentType === this.selectedDocumentType;
+        this.selectedDocumentType === 'all' || documentType === this.selectedDocumentType;
 
       return matchesSearch && matchesType;
     });
@@ -176,9 +175,7 @@ export class Receipts implements OnInit {
       const dateA = new Date(a.created_at).getTime();
       const dateB = new Date(b.created_at).getTime();
 
-      return this.sortOrder === 'newest'
-        ? dateB - dateA
-        : dateA - dateB;
+      return this.sortOrder === 'newest' ? dateB - dateA : dateA - dateB;
     });
   }
 
@@ -225,7 +222,7 @@ export class Receipts implements OnInit {
         finalize(() => {
           this.deleting = false;
           this.cdr.detectChanges();
-        })
+        }),
       )
       .subscribe({
         next: () => {

@@ -6,10 +6,10 @@ import { Analytics } from './pages/analytics/analytics';
 import { ReceiptReview } from './pages/receipt-review/receipt-review';
 
 export const routes: Routes = [
-    { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
-    { path: 'dashboard', component: Dashboard },
-    { path: 'receipts', component: Receipts },
-    { path: 'receipts/:id', component: ReceiptDetailComponent },
-    { path: 'analytics', component: Analytics },
-    { path: 'receipts/:id/review', component: ReceiptReview },  
+  { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
+  { path: 'dashboard', component: Dashboard },
+  { path: 'receipts', component: Receipts },
+  { path: 'receipts/:id', component: ReceiptDetailComponent },
+  { path: 'analytics', component: Analytics },
+  { path: 'receipts/:id/review', component: ReceiptReview },
 ];

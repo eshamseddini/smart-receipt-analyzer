@@ -1,9 +1,8 @@
 import re
-from datetime import datetime
+from datetime import datetime, timezone
 
 from app.schemas.receipt_schema import ExtractedReceiptData
 from app.services.item_categorization_service import categorize_item
-
 
 SUPPORTED_MERCHANTS = {
     "LIDL",
@@ -13,7 +12,7 @@ SUPPORTED_MERCHANTS = {
     "ALDI",
     "CARREFOUR",
     "INTERMARCHE",
-    "FRANPRIX"
+    "FRANPRIX",
 }
 
 # Merchants without a dedicated, hand-tuned parser yet. They share a
@@ -22,10 +21,7 @@ SUPPORTED_MERCHANTS = {
 GENERIC_PARSER_MERCHANTS = {"ALDI", "CARREFOUR", "INTERMARCHE", "FRANPRIX"}
 
 
-def extract_structured_data(
-    extracted_text: str,
-    document_type: str
-) -> ExtractedReceiptData:
+def extract_structured_data(extracted_text: str, document_type: str) -> ExtractedReceiptData:
     """
     Extract structured receipt data from OCR text.
 
@@ -36,9 +32,7 @@ def extract_structured_data(
     merchant_name = extract_merchant_name(extracted_text)
 
     if merchant_name not in SUPPORTED_MERCHANTS:
-        raise ValueError(
-            "Unsupported merchant. This document cannot be processed automatically."
-        )
+        raise ValueError("Unsupported merchant. This document cannot be processed automatically.")
 
     items = extract_items(
         text=extracted_text,
@@ -46,9 +40,7 @@ def extract_structured_data(
     )
 
     if not items:
-        raise ValueError(
-            "No valid items were extracted. This document needs manual review."
-        )
+        raise ValueError("No valid items were extracted. This document needs manual review.")
 
     total_amount = extract_total_amount(extracted_text)
 
@@ -67,13 +59,17 @@ def extract_structured_data(
 # Merchant
 # -------------------------------------------------------------------
 
+
 def extract_merchant_name(text: str) -> str | None:
     lower_text = normalize_ocr_text(text.lower())
 
     merchant_patterns = [
         ("LIDL", ["lidl"]),
         ("LECLERC", ["e.leclerc", "e leclerc", "eleclerc", "leclerc"]),
-        ("SUPER U", ["super u", "magasin u", "commercants autrement", "commercantes autrement", "carte u"]),
+        (
+            "SUPER U",
+            ["super u", "magasin u", "commercants autrement", "commercantes autrement", "carte u"],
+        ),
         ("ACTION", ["//action", " action", "allee de guerledan"]),
         ("CARREFOUR", ["carrefour"]),
         ("INTERMARCHE", ["intermarche"]),
@@ -90,6 +86,7 @@ def extract_merchant_name(text: str) -> str | None:
 # -------------------------------------------------------------------
 # Date / Total / Currency
 # -------------------------------------------------------------------
+
 
 def extract_purchase_date(text: str) -> str | None:
     normalized_text = normalize_ocr_text(text)
@@ -111,7 +108,7 @@ def extract_purchase_date(text: str) -> str | None:
                 year += 2000
 
             try:
-                parsed_date = datetime(year, month, day)
+                parsed_date = datetime(year, month, day, tzinfo=timezone.utc)
                 return parsed_date.date().isoformat()
             except ValueError:
                 continue
@@ -173,9 +170,7 @@ def extract_total_amount(text: str) -> float | None:
         amounts.extend(re.findall(r"\b\d+[,.]\d{2}\b", line))
 
     parsed_amounts = [
-        amount
-        for amount in (parse_amount(value) for value in amounts)
-        if amount is not None
+        amount for amount in (parse_amount(value) for value in amounts) if amount is not None
     ]
 
     if not parsed_amounts:
@@ -203,10 +198,8 @@ def extract_currency(text: str) -> str:
 # Items extraction
 # -------------------------------------------------------------------
 
-def extract_items(
-    text: str,
-    merchant_name: str
-) -> list[dict]:
+
+def extract_items(text: str, merchant_name: str) -> list[dict]:
     normalized_text = normalize_ocr_text(text)
     lines = get_clean_lines(normalized_text)
 
@@ -292,6 +285,7 @@ def parse_item_line_by_merchant(
 # -------------------------------------------------------------------
 # Merchant parsers
 # -------------------------------------------------------------------
+
 
 def parse_action_item_line(line: str) -> dict | None:
     """
@@ -388,11 +382,7 @@ def parse_lidl_item_line(line: str) -> dict | None:
     }
 
 
-def parse_super_u_item_line(
-    line: str,
-    lines: list[str],
-    index: int
-) -> dict | None:
+def parse_super_u_item_line(line: str, lines: list[str], index: int) -> dict | None:
     """
     Super U format examples:
     CROUTONS ROND.FRIT.NAT.U 2X90G 1,12 € 11
@@ -428,8 +418,7 @@ def parse_super_u_item_line(
         next_line = normalize_ocr_text(lines[index + 1].lower())
 
         quantity_match = re.search(
-            r"^(?P<quantity>\d+(?:[,.]\d+)?)\s*x+\s*"
-            r"(?P<unit_price>\d+[,.]\d{2})\s*(?:eur)?$",
+            r"^(?P<quantity>\d+(?:[,.]\d+)?)\s*x+\s*" r"(?P<unit_price>\d+[,.]\d{2})\s*(?:eur)?$",
             next_line,
         )
 
@@ -525,8 +514,7 @@ def parse_generic_item_line(line: str) -> dict | None:
     normalized_line = normalize_ocr_text(line)
 
     pattern = re.compile(
-        r"^(?P<name>.+?)\s+"
-        r"(?P<total_price>\d+[,.]\d{2})\s*(?:eur|€)\b",
+        r"^(?P<name>.+?)\s+" r"(?P<total_price>\d+[,.]\d{2})\s*(?:eur|€)\b",
         re.IGNORECASE,
     )
 
@@ -555,6 +543,7 @@ def parse_generic_item_line(line: str) -> dict | None:
 # -------------------------------------------------------------------
 # Item filters / helpers
 # -------------------------------------------------------------------
+
 
 def is_quantity_detail_line(line: str) -> bool:
     """
@@ -594,11 +583,7 @@ def is_section_header(line: str) -> bool:
         "surgele sucre",
     ]
 
-    return (
-        normalized_line in section_headers
-        or normalized_line.startswith(">>")
-        or normalized_line.startswith("***")
-    )
+    return normalized_line in section_headers or normalized_line.startswith((">>", "***"))
 
 
 def should_stop_item_extraction(lower_line: str) -> bool:
@@ -637,9 +622,8 @@ def should_stop_item_extraction(lower_line: str) -> bool:
         "avec lidl plus",
     ]
 
-    return (
-        any(normalized_line.startswith(prefix) for prefix in stop_prefixes)
-        or any(keyword in normalized_line for keyword in stop_contains)
+    return any(normalized_line.startswith(prefix) for prefix in stop_prefixes) or any(
+        keyword in normalized_line for keyword in stop_contains
     )
 
 
@@ -683,10 +667,7 @@ def should_ignore_product_name(name: str) -> bool:
     if is_section_header(name):
         return True
 
-    if len(name.strip()) < 3:
-        return True
-
-    return False
+    return len(name.strip()) < 3
 
 
 def is_tax_line(line: str) -> bool:
@@ -732,6 +713,7 @@ def clean_item_name(name: str) -> str:
 # Calculations
 # -------------------------------------------------------------------
 
+
 def fix_item_prices(
     unit_price: float | None,
     quantity: float | None,
@@ -758,10 +740,7 @@ def fix_item_prices(
 
 
 def calculate_raw_items_total(items: list[dict]) -> float:
-    total = sum(
-        item.get("total_price") or 0
-        for item in items
-    )
+    total = sum(item.get("total_price") or 0 for item in items)
 
     return round(total, 2)
 
@@ -785,12 +764,9 @@ def calculate_category_totals_from_items(items: list[dict]) -> dict[str, float]:
 # Generic helpers
 # -------------------------------------------------------------------
 
+
 def get_clean_lines(text: str) -> list[str]:
-    return [
-        line.strip()
-        for line in text.splitlines()
-        if line.strip()
-    ]
+    return [line.strip() for line in text.splitlines() if line.strip()]
 
 
 def contains_amount(text: str) -> bool:
@@ -822,13 +798,7 @@ def parse_noisy_amount(value: str | None) -> float | None:
 def normalize_price_token(value: str) -> str:
     value = value.strip().lower()
 
-    value = (
-        value
-        .replace("€", "")
-        .replace("eur", "")
-        .replace(" ", "")
-        .replace(",", ".")
-    )
+    value = value.replace("€", "").replace("eur", "").replace(" ", "").replace(",", ".")
 
     # OCR confusions
     value = value.replace("a", "4")
@@ -879,8 +849,7 @@ def parse_quantity(value: str | None) -> float | None:
 
 def normalize_ocr_text(text: str) -> str:
     return (
-        text
-        .replace("@", "0")
+        text.replace("@", "0")
         .replace("€", " eur ")
         .replace("à", "a")
         .replace("À", "A")
@@ -936,8 +905,7 @@ def normalize_lidl_line(line: str) -> str:
     line = line.strip()
 
     line = (
-        line
-        .replace("é", "e")
+        line.replace("é", "e")
         .replace("è", "e")
         .replace("ê", "e")
         .replace("à", "a")

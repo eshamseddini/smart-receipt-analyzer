@@ -47,7 +47,7 @@ export class Analytics implements OnInit {
 
   constructor(
     private analyticsService: AnalyticsService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
   ) {}
 
   ngOnInit(): void {
@@ -141,53 +141,39 @@ export class Analytics implements OnInit {
   }
 
   get visibleMerchants(): MerchantSpendingItem[] {
-    return this.showAllMerchants
-      ? this.merchantSpending
-      : this.merchantSpending.slice(0, 5);
+    return this.showAllMerchants ? this.merchantSpending : this.merchantSpending.slice(0, 5);
   }
 
   get visibleCategories(): CategorySpendingItem[] {
-    return this.showAllCategories
-      ? this.categorySpending
-      : this.categorySpending.slice(0, 6);
+    return this.showAllCategories ? this.categorySpending : this.categorySpending.slice(0, 6);
   }
 
   get visibleProducts(): TopProductInsightItem[] {
-    return this.showAllProducts
-      ? this.topProducts
-      : this.topProducts.slice(0, 8);
+    return this.showAllProducts ? this.topProducts : this.topProducts.slice(0, 8);
   }
 
   get maxMonthlySpending(): number {
     if (this.monthlySpending.length === 0) return 0;
 
-    return Math.max(
-      ...this.monthlySpending.map((month) => month.total_spent)
-    );
+    return Math.max(...this.monthlySpending.map((month) => month.total_spent));
   }
 
   get maxMerchantSpending(): number {
     if (this.merchantSpending.length === 0) return 0;
 
-    return Math.max(
-      ...this.merchantSpending.map((merchant) => merchant.total_spent)
-    );
+    return Math.max(...this.merchantSpending.map((merchant) => merchant.total_spent));
   }
 
   get maxProductSpending(): number {
     if (this.topProducts.length === 0) return 0;
 
-    return Math.max(
-      ...this.topProducts.map((product) => product.total_spent)
-    );
+    return Math.max(...this.topProducts.map((product) => product.total_spent));
   }
 
   get maxCategorySpending(): number {
     if (this.categorySpending.length === 0) return 0;
 
-    return Math.max(
-      ...this.categorySpending.map((category) => category.total_spent)
-    );
+    return Math.max(...this.categorySpending.map((category) => category.total_spent));
   }
 
   get activeFiltersCount(): number {
@@ -254,19 +240,14 @@ export class Analytics implements OnInit {
   get averageProductValue(): number {
     if (this.topProducts.length === 0) return 0;
 
-    const total = this.topProducts.reduce(
-      (sum, product) => sum + product.total_spent,
-      0
-    );
+    const total = this.topProducts.reduce((sum, product) => sum + product.total_spent, 0);
 
     return Number((total / this.topProducts.length).toFixed(2));
   }
 
   get categoryTotalSpent(): number {
     return Number(
-      this.categorySpending
-        .reduce((total, category) => total + category.total_spent, 0)
-        .toFixed(2)
+      this.categorySpending.reduce((total, category) => total + category.total_spent, 0).toFixed(2),
     );
   }
 
@@ -291,13 +272,9 @@ export class Analytics implements OnInit {
       };
     });
 
-    const mainItems = rawItems.filter(
-      (item) => item.percentage >= this.minDonutSlicePercentage
-    );
+    const mainItems = rawItems.filter((item) => item.percentage >= this.minDonutSlicePercentage);
 
-    const smallItems = rawItems.filter(
-      (item) => item.percentage < this.minDonutSlicePercentage
-    );
+    const smallItems = rawItems.filter((item) => item.percentage < this.minDonutSlicePercentage);
 
     if (smallItems.length === 0) {
       return rawItems.map((item) => ({
@@ -306,10 +283,7 @@ export class Analytics implements OnInit {
       }));
     }
 
-    const otherAmount = smallItems.reduce(
-      (sum, item) => sum + item.amount,
-      0
-    );
+    const otherAmount = smallItems.reduce((sum, item) => sum + item.amount, 0);
 
     return [
       ...mainItems.map((item) => ({
@@ -355,9 +329,7 @@ export class Analytics implements OnInit {
     return this.monthlySpending
       .map((month, index) => {
         const x = (index / lastIndex) * this.chartWidth;
-        const y =
-          this.chartHeight -
-          (month.total_spent / max) * this.chartHeight;
+        const y = this.chartHeight - (month.total_spent / max) * this.chartHeight;
 
         return `${x},${y}`;
       })
@@ -383,9 +355,7 @@ export class Analytics implements OnInit {
 
     return this.monthlySpending.map((month, index) => ({
       x: (index / lastIndex) * this.chartWidth,
-      y:
-        this.chartHeight -
-        (month.total_spent / max) * this.chartHeight,
+      y: this.chartHeight - (month.total_spent / max) * this.chartHeight,
       label: month.month,
       value: month.total_spent,
     }));
@@ -434,9 +404,7 @@ export class Analytics implements OnInit {
     percentage: number;
     color: string;
   }[] {
-    return this.showAllCategories
-      ? this.categoryShareItems
-      : this.categoryShareItems.slice(0, 6);
+    return this.showAllCategories ? this.categoryShareItems : this.categoryShareItems.slice(0, 6);
   }
 
   get shouldShowCategoryToggle(): boolean {
@@ -472,7 +440,7 @@ export class Analytics implements OnInit {
     const interval = (max - min) / steps;
 
     return Array.from({ length: steps + 1 }, (_, index) =>
-      Number((min + interval * index).toFixed(2))
+      Number((min + interval * index).toFixed(2)),
     );
   }
 
@@ -529,9 +497,6 @@ export class Analytics implements OnInit {
 
     const percentage = ((value - min) / (max - min)) * 100;
 
-    return Math.min(
-      100 - padding,
-      Math.max(padding, percentage)
-    );
+    return Math.min(100 - padding, Math.max(padding, percentage));
   }
 }

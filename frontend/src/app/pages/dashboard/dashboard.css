@@ -3,8 +3,7 @@
   padding: 40px 24px;
   background:
     radial-gradient(circle at top left, rgba(37, 99, 235, 0.14), transparent 34%),
-    radial-gradient(circle at top right, rgba(20, 184, 166, 0.14), transparent 30%),
-    var(--color-bg);
+    radial-gradient(circle at top right, rgba(20, 184, 166, 0.14), transparent 30%), var(--color-bg);
 }
 
 .dashboard-container {

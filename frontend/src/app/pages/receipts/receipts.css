@@ -22,15 +22,14 @@
   align-items: stretch;
   margin-bottom: 24px;
   padding: 38px;
-  background:
-    linear-gradient(135deg, rgba(255, 255, 255, 0.96) 0%, rgba(248, 251, 255, 0.92) 100%);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.96) 0%, rgba(248, 251, 255, 0.92) 100%);
   border: 1px solid rgba(226, 232, 240, 0.9);
   border-radius: var(--radius-xl);
   box-shadow: var(--shadow-soft);
 }
 
 .receipts-hero::after {
-  content: "";
+  content: '';
   position: absolute;
   right: 240px;
   top: -80px;
@@ -103,8 +102,7 @@
   flex-direction: column;
   justify-content: center;
   padding: 26px;
-  background:
-    linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+  background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
   color: white;
   border-radius: var(--radius-xl);
   box-shadow: 0 22px 50px rgba(37, 99, 235, 0.22);
@@ -224,7 +222,8 @@
   backdrop-filter: blur(14px);
 }
 
-.empty-state, .empty-filter {
+.empty-state,
+.empty-filter {
   display: grid;
   place-items: center;
   min-height: 300px;
@@ -489,7 +488,7 @@
     width: 100%;
   }
 
-  .file-input span{
+  .file-input span {
     width: 100%;
     justify-content: center;
   }
@@ -539,11 +538,11 @@
     flex-direction: column;
   }
 
-  .search-box{
+  .search-box {
     min-width: 100%;
   }
 
-  .type-options{
+  .type-options {
     flex-wrap: wrap;
     border-radius: var(--radius-md);
   }
@@ -557,7 +556,7 @@
 
 .search-box,
 .type-filter,
-.sort-filter  {
+.sort-filter {
   display: grid;
   gap: 8px;
 }

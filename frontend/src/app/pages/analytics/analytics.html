@@ -5,8 +5,8 @@
         <span class="eyebrow">Data intelligence</span>
         <h1>Analytics workspace</h1>
         <p>
-          Explore OCR-extracted receipts with spending trends, category distribution,
-          merchant ranking and product-level analysis.
+          Explore OCR-extracted receipts with spending trends, category distribution, merchant
+          ranking and product-level analysis.
         </p>
 
         <div class="hero-pills">
@@ -51,13 +51,9 @@
         </div>
 
         <div class="filters-actions">
-          <button class="ghost-button" type="button" (click)="resetFilters()">
-            Reset
-          </button>
+          <button class="ghost-button" type="button" (click)="resetFilters()">Reset</button>
 
-          <button class="primary-button" type="button" (click)="loadAnalytics()">
-            Refresh
-          </button>
+          <button class="primary-button" type="button" (click)="loadAnalytics()">Refresh</button>
         </div>
       </div>
 
@@ -70,9 +66,7 @@
               <p>Filters are applied to the analytics endpoint result.</p>
             </div>
 
-            <button class="ghost-button" type="button" (click)="toggleFilters()">
-              Close
-            </button>
+            <button class="ghost-button" type="button" (click)="toggleFilters()">Close</button>
           </div>
 
           <div class="quick-periods">
@@ -154,7 +148,9 @@
             <div class="filter-group">
               <div class="filter-group-title">
                 <strong>Category</strong>
-                <span>{{ selectedCategory ? formatLabel(selectedCategory) : 'All categories' }}</span>
+                <span>{{
+                  selectedCategory ? formatLabel(selectedCategory) : 'All categories'
+                }}</span>
               </div>
 
               <div class="option-list">
@@ -194,7 +190,7 @@
       <section class="kpi-grid">
         <article class="kpi-card primary">
           <span>Total spent</span>
-          <strong>{{ totalSpent | number:'1.2-2' }} EUR</strong>
+          <strong>{{ totalSpent | number: '1.2-2' }} EUR</strong>
           <p>Filtered receipts spending</p>
         </article>
 
@@ -206,7 +202,7 @@
 
         <article class="kpi-card">
           <span>Average basket</span>
-          <strong>{{ averageBasket | number:'1.2-2' }} EUR</strong>
+          <strong>{{ averageBasket | number: '1.2-2' }} EUR</strong>
           <p>Mean amount per receipt</p>
         </article>
 
@@ -246,12 +242,7 @@
                 <polyline class="line-path" [attr.points]="monthlyLinePoints" />
 
                 @for (point of monthlyChartDots; track point.label) {
-                  <circle
-                    class="line-dot"
-                    [attr.cx]="point.x"
-                    [attr.cy]="point.y"
-                    r="5"
-                  />
+                  <circle class="line-dot" [attr.cx]="point.x" [attr.cy]="point.y" r="5" />
                 }
               </svg>
 
@@ -286,7 +277,7 @@
               <div class="donut-chart" [style.background]="donutGradient">
                 <div class="donut-hole">
                   <span>Total</span>
-                  <strong>{{ categoryTotalSpent | number:'1.0-0' }}€</strong>
+                  <strong>{{ categoryTotalSpent | number: '1.0-0' }}€</strong>
                 </div>
               </div>
 
@@ -298,7 +289,7 @@
                     <div>
                       <strong>{{ category.label }}</strong>
                       <span>
-                        {{ category.amount | number:'1.2-2' }} EUR · {{ category.percentage }}%
+                        {{ category.amount | number: '1.2-2' }} EUR · {{ category.percentage }}%
                       </span>
                     </div>
                   </div>
@@ -331,7 +322,7 @@
                 <article class="bar-row">
                   <div class="bar-row-header">
                     <strong>{{ merchant.merchant_name }}</strong>
-                    <b>{{ merchant.total_spent | number:'1.2-2' }} EUR</b>
+                    <b>{{ merchant.total_spent | number: '1.2-2' }} EUR</b>
                   </div>
 
                   <div class="bar-track">
@@ -361,46 +352,42 @@
 
           @if (productScatterPoints.length > 0) {
             <div class="scatter-chart">
-            <div class="scatter-plot-area">
-              <div class="scatter-y-label">Spending</div>
-              <div class="scatter-x-label">Quantity</div>
+              <div class="scatter-plot-area">
+                <div class="scatter-y-label">Spending</div>
+                <div class="scatter-x-label">Quantity</div>
 
-              <div class="scatter-y-axis">
-                @for (tick of scatterYAxisTicks.slice().reverse(); track tick) {
-                  <span
-                    [style.top.%]="100 - getScatterTickPosition(tick, scatterYAxisTicks)"
+                <div class="scatter-y-axis">
+                  @for (tick of scatterYAxisTicks.slice().reverse(); track tick) {
+                    <span [style.top.%]="100 - getScatterTickPosition(tick, scatterYAxisTicks)">
+                      {{ tick | number: '1.0-1' }}€
+                    </span>
+                  }
+                </div>
+
+                <div class="scatter-x-axis">
+                  @for (tick of scatterXAxisTicks; track tick) {
+                    <span [style.left.%]="getScatterTickPosition(tick, scatterXAxisTicks)">
+                      {{ tick | number: '1.0-1' }}
+                    </span>
+                  }
+                </div>
+
+                @for (point of productScatterPoints; track point.name) {
+                  <div
+                    class="scatter-dot"
+                    [style.left.%]="point.x"
+                    [style.top.%]="point.y"
+                    [style.background]="point.color"
+                    [title]="point.name + ' · ' + point.amount + ' EUR · Qty ' + point.quantity"
                   >
-                    {{ tick | number:'1.0-1' }}€
-                  </span>
+                    <span>
+                      {{ point.name }}<br />
+                      {{ point.amount | number: '1.2-2' }} EUR · Qty {{ point.quantity }}
+                    </span>
+                  </div>
                 }
               </div>
-
-              <div class="scatter-x-axis">
-                @for (tick of scatterXAxisTicks; track tick) {
-                  <span
-                    [style.left.%]="getScatterTickPosition(tick, scatterXAxisTicks)"
-                  >
-                    {{ tick | number:'1.0-1' }}
-                  </span>
-                }
-              </div>
-
-            @for (point of productScatterPoints; track point.name) {
-              <div
-                class="scatter-dot"
-                [style.left.%]="point.x"
-                [style.top.%]="point.y"
-                [style.background]="point.color"
-                [title]="point.name + ' · ' + point.amount + ' EUR · Qty ' + point.quantity"
-              >
-                <span>
-                  {{ point.name }}<br />
-                  {{ point.amount | number:'1.2-2' }} EUR · Qty {{ point.quantity }}
-                </span>
-              </div>
-            }
-          </div>
-        </div>
+            </div>
           } @else {
             <div class="empty-chart">No product data available.</div>
           }
@@ -425,9 +412,7 @@
             <div class="compact-product-grid">
               @for (product of visibleProducts; track product.product_name; let index = $index) {
                 <article class="compact-product-card">
-                  <div class="compact-product-rank">
-                    #{{ index + 1 }}
-                  </div>
+                  <div class="compact-product-rank">#{{ index + 1 }}</div>
 
                   <div class="compact-product-main">
                     <strong>{{ product.product_name }}</strong>
@@ -445,13 +430,13 @@
                   </div>
 
                   <div class="compact-product-values">
-                    <strong>{{ product.total_spent | number:'1.2-2' }} EUR</strong>
+                    <strong>{{ product.total_spent | number: '1.2-2' }} EUR</strong>
 
                     <span>
                       Avg
                       {{
                         product.quantity
-                          ? (product.total_spent / product.quantity | number:'1.2-2')
+                          ? (product.total_spent / product.quantity | number: '1.2-2')
                           : 0
                       }}
                       EUR
