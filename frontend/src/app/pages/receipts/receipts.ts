@@ -117,33 +117,38 @@ export class Receipts implements OnInit {
     this.errorMessage = '';
     this.successMessage = '';
 
-    this.receiptService.uploadReceipt(this.selectedFile).subscribe({
-      next: (response) => {
-        this.uploading = false;
-        this.errorMessage = '';
-        this.successMessage = 'Receipt uploaded and processed successfully.';
+    this.receiptService
+      .uploadReceipt(this.selectedFile)
+      .pipe(
+        finalize(() => {
+          this.uploading = false;
+          this.cdr.detectChanges();
+        })
+      )
+      .subscribe({
+        next: (response) => {
+          this.errorMessage = '';
+          this.successMessage = 'Receipt uploaded and processed successfully.';
 
-        // adapte selon ton router actuel
-        this.router.navigate(['/receipts', response.receipt_id]);
-      },
+          this.router.navigate(['/receipts', response.receipt_id]);
+        },
 
-      error: (error) => {
-        this.uploading = false;
-        this.successMessage = '';
+        error: (error) => {
+          this.successMessage = '';
 
-        if (error.status === 422 && error.error?.detail?.message) {
-          this.errorMessage = error.error.detail.message;
-          return;
-        }
+          if (error.status === 422 && error.error?.detail?.message) {
+            this.errorMessage = error.error.detail.message;
+            return;
+          }
 
-        if (error.status === 400 && error.error?.detail) {
-          this.errorMessage = error.error.detail;
-          return;
-        }
+          if (error.status === 400 && error.error?.detail) {
+            this.errorMessage = error.error.detail;
+            return;
+          }
 
-        this.errorMessage = 'An unexpected error occurred while uploading the file.';
-      },
-    });
+          this.errorMessage = 'An unexpected error occurred while uploading the file.';
+        },
+      });
   }
 
   get filteredReceipts(): ReceiptListItem[] {
