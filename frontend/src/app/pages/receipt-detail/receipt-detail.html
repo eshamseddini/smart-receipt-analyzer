@@ -34,214 +34,244 @@
           </div>
         </div>
 
-        <div class="status-card">
-          <span class="status-label">Validation status</span>
+        @if (receipt.processing_status === 'completed') {
+          <div class="status-card">
+            <span class="status-label">Validation status</span>
 
-          <strong
-            [class.valid]="validationStatusLabel === 'Valid'"
-            [class.warning]="validationStatusLabel === 'Needs review'"
-            [class.invalid]="validationStatusLabel === 'Invalid'"
-          >
-            {{ validationStatusLabel }}
-          </strong>
+            <strong
+              [class.valid]="validationStatusLabel === 'Valid'"
+              [class.warning]="validationStatusLabel === 'Needs review'"
+              [class.invalid]="validationStatusLabel === 'Invalid'"
+            >
+              {{ validationStatusLabel }}
+            </strong>
 
-          <p>
-            {{ receipt.validation_result?.errors?.length || 0 }} errors ·
-            {{ receipt.validation_result?.warnings?.length || 0 }} warnings
-          </p>
-          <a
-            class="review-button"
-            [class.warning]="reviewButtonVariant === 'warning'"
-            [class.danger]="reviewButtonVariant === 'danger'"
-            [class.neutral]="reviewButtonVariant === 'neutral'"
-            [routerLink]="['/receipts', receipt.id, 'review']"
-          >
-            {{ reviewButtonLabel }}
-          </a>
-        </div>
+            <p>
+              {{ receipt.validation_result?.errors?.length || 0 }} errors ·
+              {{ receipt.validation_result?.warnings?.length || 0 }} warnings
+            </p>
+            <a
+              class="review-button"
+              [class.warning]="reviewButtonVariant === 'warning'"
+              [class.danger]="reviewButtonVariant === 'danger'"
+              [class.neutral]="reviewButtonVariant === 'neutral'"
+              [routerLink]="['/receipts', receipt.id, 'review']"
+            >
+              {{ reviewButtonLabel }}
+            </a>
+          </div>
+        } @else if (isProcessing) {
+          <div class="status-card">
+            <span class="status-label">Status</span>
+            <strong class="warning">Processing...</strong>
+            <p>OCR extraction and validation are running in the background.</p>
+          </div>
+        } @else if (isFailed) {
+          <div class="status-card">
+            <span class="status-label">Status</span>
+            <strong class="invalid">Failed</strong>
+            <p>{{ receipt.error_message }}</p>
+          </div>
+        }
       </header>
 
-      <section class="metadata-grid">
-        <article class="meta-card">
-          <span>Document ID</span>
-          <strong>#{{ receipt.id }}</strong>
-        </article>
-
-        <article class="meta-card">
-          <span>Document type</span>
-          <strong>{{ receipt.document_type || 'Unknown' }}</strong>
-        </article>
-
-        <article class="meta-card">
-          <span>Content type</span>
-          <strong>{{ receipt.content_type }}</strong>
-        </article>
-
-        <article class="meta-card">
-          <span>Created at</span>
-          <strong>{{ receipt.created_at | date: 'short' }}</strong>
-        </article>
-      </section>
-      @if (categoryTotals.length > 0) {
-        <section class="category-summary">
-          <div class="category-summary-header">
-            <div>
-              <span class="panel-kicker">Analytics</span>
-              <h2>Spending by category</h2>
-              <p>Quick breakdown based on the extracted receipt items.</p>
-            </div>
-
-            <div class="summary-total">
-              <span>Total paid</span>
-              <strong>
-                {{ receipt.structured_data?.total_amount | number: '1.2-2' }}
-                {{ receipt.structured_data?.currency || 'EUR' }}
-              </strong>
-            </div>
-          </div>
-
-          <div class="category-grid">
-            @for (category of categoryTotals; track category.name) {
-              <article class="category-card">
-                <div class="category-icon">
-                  {{ category.name.charAt(0) }}
-                </div>
-
-                <div>
-                  <span>{{ category.name }}</span>
-                  <strong>
-                    {{ category.amount | number: '1.2-2' }}
-                    {{ receipt.structured_data?.currency || 'EUR' }}
-                  </strong>
-                </div>
-              </article>
-            }
-          </div>
-        </section>
+      @if (isProcessing) {
+        <app-page-state
+          type="loading"
+          message="Processing your receipt — running OCR, extracting data, and validating it. This can take a little while, especially on a free-tier demo instance."
+        />
       }
-      @if (extractedItems.length > 0) {
-        <section class="items-panel">
-          <div class="items-header">
-            <div>
-              <span class="panel-kicker">Extracted items</span>
-              <h2>Receipt products</h2>
-              <p>Products detected from the OCR text and enriched with categories.</p>
-            </div>
-          </div>
 
-          <div class="items-table">
-            <div class="items-table-header">
-              <span>Product</span>
-              <span>Category</span>
-              <span>Quantity</span>
-              <span>Unit price</span>
-              <span>Total</span>
-            </div>
+      @if (isFailed) {
+        <app-page-state
+          type="error"
+          [message]="receipt.error_message || 'This receipt could not be processed.'"
+        />
+      }
 
-            @for (item of extractedItems; track item.name) {
-              <article class="items-row">
-                <div class="item-name">
-                  <strong>{{ item.name }}</strong>
-                </div>
+      @if (receipt.processing_status === 'completed') {
+        <section class="metadata-grid">
+          <article class="meta-card">
+            <span>Document ID</span>
+            <strong>#{{ receipt.id }}</strong>
+          </article>
 
-                <span class="item-category">
-                  {{ item.category ? formatCategoryName(item.category) : 'Other' }}
-                </span>
+          <article class="meta-card">
+            <span>Document type</span>
+            <strong>{{ receipt.document_type || 'Unknown' }}</strong>
+          </article>
 
-                <span>
-                  {{ item.quantity || 1 }}
-                </span>
+          <article class="meta-card">
+            <span>Content type</span>
+            <strong>{{ receipt.content_type }}</strong>
+          </article>
 
-                <span>
-                  {{ item.unit_price | number: '1.2-2' }}
-                  {{ receipt.structured_data?.currency || 'EUR' }}
-                </span>
+          <article class="meta-card">
+            <span>Created at</span>
+            <strong>{{ receipt.created_at | date: 'short' }}</strong>
+          </article>
+        </section>
+        @if (categoryTotals.length > 0) {
+          <section class="category-summary">
+            <div class="category-summary-header">
+              <div>
+                <span class="panel-kicker">Analytics</span>
+                <h2>Spending by category</h2>
+                <p>Quick breakdown based on the extracted receipt items.</p>
+              </div>
 
+              <div class="summary-total">
+                <span>Total paid</span>
                 <strong>
-                  {{ item.total_price | number: '1.2-2' }}
+                  {{ receipt.structured_data?.total_amount | number: '1.2-2' }}
                   {{ receipt.structured_data?.currency || 'EUR' }}
                 </strong>
-              </article>
-            }
-          </div>
+              </div>
+            </div>
+
+            <div class="category-grid">
+              @for (category of categoryTotals; track category.name) {
+                <article class="category-card">
+                  <div class="category-icon">
+                    {{ category.name.charAt(0) }}
+                  </div>
+
+                  <div>
+                    <span>{{ category.name }}</span>
+                    <strong>
+                      {{ category.amount | number: '1.2-2' }}
+                      {{ receipt.structured_data?.currency || 'EUR' }}
+                    </strong>
+                  </div>
+                </article>
+              }
+            </div>
+          </section>
+        }
+        @if (extractedItems.length > 0) {
+          <section class="items-panel">
+            <div class="items-header">
+              <div>
+                <span class="panel-kicker">Extracted items</span>
+                <h2>Receipt products</h2>
+                <p>Products detected from the OCR text and enriched with categories.</p>
+              </div>
+            </div>
+
+            <div class="items-table">
+              <div class="items-table-header">
+                <span>Product</span>
+                <span>Category</span>
+                <span>Quantity</span>
+                <span>Unit price</span>
+                <span>Total</span>
+              </div>
+
+              @for (item of extractedItems; track item.name) {
+                <article class="items-row">
+                  <div class="item-name">
+                    <strong>{{ item.name }}</strong>
+                  </div>
+
+                  <span class="item-category">
+                    {{ item.category ? formatCategoryName(item.category) : 'Other' }}
+                  </span>
+
+                  <span>
+                    {{ item.quantity || 1 }}
+                  </span>
+
+                  <span>
+                    {{ item.unit_price | number: '1.2-2' }}
+                    {{ receipt.structured_data?.currency || 'EUR' }}
+                  </span>
+
+                  <strong>
+                    {{ item.total_price | number: '1.2-2' }}
+                    {{ receipt.structured_data?.currency || 'EUR' }}
+                  </strong>
+                </article>
+              }
+            </div>
+          </section>
+        }
+        <section class="analysis-grid">
+          <article class="panel ocr-panel">
+            <div class="panel-header">
+              <div>
+                <span class="panel-kicker">OCR output</span>
+                <h2>Extracted text</h2>
+              </div>
+
+              <span class="panel-chip">Raw text</span>
+            </div>
+
+            <pre>{{ receipt.extracted_text || 'No extracted text available.' }}</pre>
+          </article>
+
+          <article class="panel json-panel">
+            <div class="panel-header">
+              <div>
+                <span class="panel-kicker">Structured data</span>
+                <h2>Extracted JSON</h2>
+              </div>
+
+              <span class="panel-chip">JSON</span>
+            </div>
+
+            <pre>{{ receipt.structured_data | json }}</pre>
+          </article>
+
+          <article class="panel validation-panel">
+            <div class="panel-header">
+              <div>
+                <span class="panel-kicker">Business rules</span>
+                <h2>Validation feedback</h2>
+              </div>
+
+              <span class="validation-pill" [class.valid]="receipt.validation_result?.is_valid">
+                {{ receipt.validation_result?.is_valid ? 'Valid' : 'Invalid' }}
+              </span>
+            </div>
+
+            <div class="feedback-grid">
+              <div class="feedback-box errors">
+                <div class="feedback-title">
+                  <span>!</span>
+                  <h3>Errors</h3>
+                </div>
+
+                @if (receipt.validation_result?.errors?.length) {
+                  <ul>
+                    @for (error of receipt.validation_result?.errors; track error) {
+                      <li>{{ error }}</li>
+                    }
+                  </ul>
+                } @else {
+                  <p>No errors detected.</p>
+                }
+              </div>
+
+              <div class="feedback-box warnings">
+                <div class="feedback-title">
+                  <span>⚠</span>
+                  <h3>Warnings</h3>
+                </div>
+
+                @if (receipt.validation_result?.warnings?.length) {
+                  <ul>
+                    @for (warning of receipt.validation_result?.warnings; track warning) {
+                      <li>{{ warning }}</li>
+                    }
+                  </ul>
+                } @else {
+                  <p>No warnings detected.</p>
+                }
+              </div>
+            </div>
+          </article>
         </section>
       }
-      <section class="analysis-grid">
-        <article class="panel ocr-panel">
-          <div class="panel-header">
-            <div>
-              <span class="panel-kicker">OCR output</span>
-              <h2>Extracted text</h2>
-            </div>
-
-            <span class="panel-chip">Raw text</span>
-          </div>
-
-          <pre>{{ receipt.extracted_text || 'No extracted text available.' }}</pre>
-        </article>
-
-        <article class="panel json-panel">
-          <div class="panel-header">
-            <div>
-              <span class="panel-kicker">Structured data</span>
-              <h2>Extracted JSON</h2>
-            </div>
-
-            <span class="panel-chip">JSON</span>
-          </div>
-
-          <pre>{{ receipt.structured_data | json }}</pre>
-        </article>
-
-        <article class="panel validation-panel">
-          <div class="panel-header">
-            <div>
-              <span class="panel-kicker">Business rules</span>
-              <h2>Validation feedback</h2>
-            </div>
-
-            <span class="validation-pill" [class.valid]="receipt.validation_result?.is_valid">
-              {{ receipt.validation_result?.is_valid ? 'Valid' : 'Invalid' }}
-            </span>
-          </div>
-
-          <div class="feedback-grid">
-            <div class="feedback-box errors">
-              <div class="feedback-title">
-                <span>!</span>
-                <h3>Errors</h3>
-              </div>
-
-              @if (receipt.validation_result?.errors?.length) {
-                <ul>
-                  @for (error of receipt.validation_result?.errors; track error) {
-                    <li>{{ error }}</li>
-                  }
-                </ul>
-              } @else {
-                <p>No errors detected.</p>
-              }
-            </div>
-
-            <div class="feedback-box warnings">
-              <div class="feedback-title">
-                <span>⚠</span>
-                <h3>Warnings</h3>
-              </div>
-
-              @if (receipt.validation_result?.warnings?.length) {
-                <ul>
-                  @for (warning of receipt.validation_result?.warnings; track warning) {
-                    <li>{{ warning }}</li>
-                  }
-                </ul>
-              } @else {
-                <p>No warnings detected.</p>
-              }
-            </div>
-          </div>
-        </article>
-      </section>
     }
   </div>
 </section>

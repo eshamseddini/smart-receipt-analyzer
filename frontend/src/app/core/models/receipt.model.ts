@@ -22,6 +22,8 @@ export interface ValidationResult {
   warnings: string[];
 }
 
+export type ProcessingStatus = 'pending' | 'completed' | 'failed';
+
 export interface ReceiptListItem {
   id: number;
   original_filename: string;
@@ -29,6 +31,8 @@ export interface ReceiptListItem {
   saved_path: string;
   document_type: string | null;
   created_at: string;
+  processing_status: ProcessingStatus;
+  error_message: string | null;
 }
 
 export interface ReceiptDetail extends ReceiptListItem {
@@ -37,15 +41,10 @@ export interface ReceiptDetail extends ReceiptListItem {
   validation_result: ValidationResult | null;
 }
 
-export interface UploadReceiptResponse {
+export interface UploadAcceptedResponse {
   receipt_id: number;
   filename: string;
-  content_type: string;
-  saved_path: string;
-  extracted_text: string;
-  document_type: string;
-  structured_data: ExtractedReceiptData;
-  validation_result: ValidationResult;
+  processing_status: ProcessingStatus;
   message: string;
 }
 

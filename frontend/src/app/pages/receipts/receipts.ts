@@ -128,18 +128,13 @@ export class Receipts implements OnInit {
       .subscribe({
         next: (response) => {
           this.errorMessage = '';
-          this.successMessage = 'Receipt uploaded and processed successfully.';
+          this.successMessage = 'Receipt uploaded. Processing in the background...';
 
           this.router.navigate(['/receipts', response.receipt_id]);
         },
 
         error: (error) => {
           this.successMessage = '';
-
-          if (error.status === 422 && error.error?.detail?.message) {
-            this.errorMessage = error.error.detail.message;
-            return;
-          }
 
           if (error.status === 400 && error.error?.detail) {
             this.errorMessage = error.error.detail;

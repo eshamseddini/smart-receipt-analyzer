@@ -16,4 +16,9 @@ class Receipt(Base):
     document_type = Column(String, nullable=True)
     structured_data = Column(JSON, nullable=True)
     validation_result = Column(JSON, nullable=True)
+    # Nullable at the DB level (not just app-level) so this column can be
+    # added to an already-populated table without a backfill migration.
+    # NULL means "completed" for rows created before this column existed.
+    processing_status = Column(String, nullable=True, default="pending")
+    error_message = Column(Text, nullable=True)
     created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))

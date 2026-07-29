@@ -190,9 +190,15 @@
                 </div>
               </div>
 
-              <span class="type-badge" [class.unknown]="!receipt.document_type">
-                {{ receipt.document_type || 'Unknown' }}
-              </span>
+              @if (receipt.processing_status === 'pending') {
+                <span class="type-badge unknown">Processing...</span>
+              } @else if (receipt.processing_status === 'failed') {
+                <span class="type-badge unknown">Failed</span>
+              } @else {
+                <span class="type-badge" [class.unknown]="!receipt.document_type">
+                  {{ receipt.document_type || 'Unknown' }}
+                </span>
+              }
 
               <span class="muted">
                 {{ receipt.created_at | date: 'medium' }}

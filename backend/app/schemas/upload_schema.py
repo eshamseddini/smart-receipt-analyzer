@@ -1,19 +1,16 @@
 from pydantic import BaseModel
 
-from app.schemas.receipt_schema import ExtractedReceiptData, ValidationResult
 
-
-class UploadReceiptResponse(BaseModel):
+class UploadAcceptedResponse(BaseModel):
     """
     Response model for the upload receipt endpoint.
+
+    Processing (OCR, extraction, validation) happens in the background —
+    poll GET /api/receipts/{receipt_id} until processing_status is no
+    longer "pending" to get the final result.
     """
 
     receipt_id: int
     filename: str
-    content_type: str
-    saved_path: str
-    extracted_text: str
-    document_type: str | None
-    structured_data: ExtractedReceiptData
-    validation_result: ValidationResult
+    processing_status: str
     message: str

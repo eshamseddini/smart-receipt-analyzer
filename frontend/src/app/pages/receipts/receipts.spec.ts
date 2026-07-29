@@ -16,6 +16,8 @@ function makeReceipt(overrides: Partial<ReceiptListItem>): ReceiptListItem {
     saved_path: 'uploads/ticket.png',
     document_type: 'receipt',
     created_at: '2026-01-01T10:00:00Z',
+    processing_status: 'completed',
+    error_message: null,
     ...overrides,
   };
 }

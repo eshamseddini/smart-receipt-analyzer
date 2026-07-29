@@ -352,10 +352,13 @@ The repo is ready to deploy as-is on [Render](https://render.com) using the `ren
 - Free web services on Render spin down after inactivity; the first request after idling can take ~30-60s to wake up.
 - Uploaded receipt files are stored on local container disk (`backend/uploads/`) — on a free/ephemeral instance this storage does **not** persist across redeploys. The database (Postgres, managed separately) does persist. For a fully durable demo, add a Render persistent disk or swap `file_service.py` to an S3-compatible bucket.
 - The n8n webhook integration is disabled by default (`WEBHOOK_ENABLED=false`) — it targets a local n8n instance and isn't part of this deployment. To wire it up in production, run n8n separately (e.g. n8n Cloud, or a separate Render/VPS deployment) and point `WEBHOOK_URL` at it.
+- Free-tier CPU is heavily throttled: OCR on a real phone photo that takes ~1s locally was measured taking 7+ minutes on Render's free plan. Uploads are processed asynchronously for exactly this reason (see below) — without that, the reverse proxy's gateway timeout would turn a slow-but-successful upload into a client-facing `502`/`504`.
 
-### A real gotcha we hit (and already fixed in this repo)
+### Real gotchas we hit deploying this (already fixed in this repo)
 
-When `BACKEND_URL` points to an **HTTPS** host (as it does on Render, vs. plain HTTP in local Docker Compose), nginx needs two extra directives to correctly reverse-proxy to it — otherwise you get an intermittent `502 Bad Gateway`:
+**nginx proxying to an HTTPS upstream by hostname (`502 Bad Gateway`)**
+
+When `BACKEND_URL` points to an **HTTPS** host (as it does on Render, vs. plain HTTP in local Docker Compose), nginx needs two extra directives to correctly reverse-proxy to it:
 
 ```nginx
 proxy_ssl_server_name on;        # sends the correct SNI during the TLS handshake
@@ -363,6 +366,14 @@ proxy_set_header Host $proxy_host;  # forwards the upstream's own hostname, not 
 ```
 
 Without `proxy_ssl_server_name on`, Cloudflare (which fronts Render) can't route the TLS connection correctly. Without the corrected `Host` header, requests fail because they carry the *frontend's* hostname while trying to reach the *backend's*. Both are already set in [`frontend/nginx.conf.template`](frontend/nginx.conf.template).
+
+**OCR is too slow for a synchronous request/response cycle on constrained hosting**
+
+`POST /api/receipts/upload` returns `202 Accepted` immediately with `processing_status: "pending"`; OCR, classification, extraction and validation run in a `BackgroundTask` afterward. The frontend polls `GET /api/receipts/{id}` every few seconds until the status is no longer `"pending"`. See [`receipt_processing_service.py`](backend/app/services/receipt_processing_service.py) and the polling logic in [`receipt-detail.ts`](frontend/src/app/pages/receipt-detail/receipt-detail.ts).
+
+Two smaller mitigations ride along with this:
+- Images above 4000px on the longest side are downscaled before OCR (a pure safety net for oversized photos — testing showed overly aggressive downscaling can flip character recognition, e.g. "Carrefour" → "Garrefour", so this is deliberately generous rather than tuned for speed).
+- New columns (`processing_status`, `error_message`) are added to the `receipts` table via a small in-code migration ([`run_lightweight_migrations()`](backend/app/db/database.py)) rather than a full migration tool — enough for a project of this size, since `Base.metadata.create_all()` alone only creates missing tables, not missing columns on existing ones.
 
 ---
 

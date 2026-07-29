@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 
 class ReceiptItem(BaseModel):
@@ -34,7 +34,16 @@ class ReceiptListItem(BaseModel):
     saved_path: str
     document_type: str | None
     created_at: datetime
+    processing_status: str = "completed"
+    error_message: str | None = None
     model_config = ConfigDict(from_attributes=True)  # Enable ORM mode for SQLAlchemy models
+
+    @field_validator("processing_status", mode="before")
+    @classmethod
+    def default_missing_status_to_completed(cls, value: str | None) -> str:
+        # NULL (pre-existing rows) means "completed" — they were created back
+        # when processing was synchronous, so they already have full data.
+        return value or "completed"
 
 
 class ReceiptDetail(ReceiptListItem):

@@ -14,6 +14,8 @@ function makeReceipt(overrides: Partial<ReceiptDetail> = {}): ReceiptDetail {
     saved_path: 'uploads/ticket.png',
     document_type: 'receipt',
     created_at: '2026-01-01T10:00:00Z',
+    processing_status: 'completed',
+    error_message: null,
     extracted_text: '',
     structured_data: {
       merchant_name: 'LIDL',
@@ -46,6 +48,32 @@ describe('ReceiptDetailComponent', () => {
 
   it('should create', () => {
     expect(component).toBeTruthy();
+  });
+
+  describe('processing status flags', () => {
+    it('reports isProcessing while the background job is still pending', () => {
+      component.receipt = makeReceipt({ processing_status: 'pending' });
+
+      expect(component.isProcessing).toBe(true);
+      expect(component.isFailed).toBe(false);
+    });
+
+    it('reports isFailed when background processing failed', () => {
+      component.receipt = makeReceipt({
+        processing_status: 'failed',
+        error_message: 'Unsupported merchant.',
+      });
+
+      expect(component.isFailed).toBe(true);
+      expect(component.isProcessing).toBe(false);
+    });
+
+    it('reports neither flag once processing has completed', () => {
+      component.receipt = makeReceipt({ processing_status: 'completed' });
+
+      expect(component.isProcessing).toBe(false);
+      expect(component.isFailed).toBe(false);
+    });
   });
 
   describe('categoryTotals', () => {

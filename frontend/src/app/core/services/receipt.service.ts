@@ -8,7 +8,7 @@ import {
   ExtractedReceiptData,
   PaginatedReceipts,
   ReceiptDetail,
-  UploadReceiptResponse,
+  UploadAcceptedResponse,
 } from '../models/receipt.model';
 
 @Injectable({
@@ -29,11 +29,11 @@ export class ReceiptService {
     return this.http.get<ReceiptDetail>(`${this.baseUrl}/api/receipts/${id}`);
   }
 
-  uploadReceipt(file: File): Observable<UploadReceiptResponse> {
+  uploadReceipt(file: File): Observable<UploadAcceptedResponse> {
     const formData = new FormData();
     formData.append('file', file);
 
-    return this.http.post<UploadReceiptResponse>(`${this.baseUrl}/api/receipts/upload`, formData);
+    return this.http.post<UploadAcceptedResponse>(`${this.baseUrl}/api/receipts/upload`, formData);
   }
 
   deleteReceipt(id: number): Observable<DeleteReceiptResponse> {

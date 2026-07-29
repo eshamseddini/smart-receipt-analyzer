@@ -114,7 +114,7 @@ def test_upload_invalid_file_type():
     assert response.status_code == 400
 
 
-def test_upload_valid_png_file_with_unknown_content_is_rejected():
+def test_upload_returns_202_with_pending_status_immediately():
     png_content = (
         b"\x89PNG\r\n\x1a\n"
         b"\x00\x00\x00\rIHDR"
@@ -127,27 +127,47 @@ def test_upload_valid_png_file_with_unknown_content_is_rejected():
         b"\x00\x00\x00\x00IEND\xaeB`\x82"
     )
 
-    files = {
-        "file": (
-            "receipt.png",
-            png_content,
-            "image/png",
-        )
-    }
+    files = {"file": ("receipt.png", png_content, "image/png")}
 
     response = client.post("/api/receipts/upload", files=files)
 
-    assert response.status_code == 422
+    assert response.status_code == 202
 
     data = response.json()
 
-    assert "detail" in data
-    assert "message" in data["detail"]
-    assert "Unsupported merchant" in data["detail"]["message"]
-    assert data["detail"]["document_type"] == "unknown"
+    assert "receipt_id" in data
+    assert data["processing_status"] == "pending"
 
 
-def test_upload_corrupted_image_returns_clean_422_instead_of_500():
+def test_upload_valid_png_file_with_unknown_content_ends_up_failed():
+    # TestClient runs BackgroundTasks synchronously as part of the request,
+    # so by the time client.post() returns, processing has already finished.
+    png_content = (
+        b"\x89PNG\r\n\x1a\n"
+        b"\x00\x00\x00\rIHDR"
+        b"\x00\x00\x00\x01"
+        b"\x00\x00\x00\x01"
+        b"\x08\x02\x00\x00\x00"
+        b"\x90wS\xde"
+        b"\x00\x00\x00\x0cIDAT"
+        b"\x08\xd7c\xf8\xff\xff?\x00\x05\xfe\x02\xfeA\xe2!\xbc"
+        b"\x00\x00\x00\x00IEND\xaeB`\x82"
+    )
+
+    files = {"file": ("receipt.png", png_content, "image/png")}
+
+    upload_response = client.post("/api/receipts/upload", files=files)
+    receipt_id = upload_response.json()["receipt_id"]
+
+    detail_response = client.get(f"/api/receipts/{receipt_id}")
+    data = detail_response.json()
+
+    assert data["processing_status"] == "failed"
+    assert "Unsupported merchant" in data["error_message"]
+    assert data["document_type"] is None
+
+
+def test_upload_corrupted_image_ends_up_failed_with_clean_message():
     files = {
         "file": (
             "corrupted.png",
@@ -156,12 +176,11 @@ def test_upload_corrupted_image_returns_clean_422_instead_of_500():
         )
     }
 
-    response = client.post("/api/receipts/upload", files=files)
+    upload_response = client.post("/api/receipts/upload", files=files)
+    receipt_id = upload_response.json()["receipt_id"]
 
-    assert response.status_code == 422
+    detail_response = client.get(f"/api/receipts/{receipt_id}")
+    data = detail_response.json()
 
-    data = response.json()
-
-    assert "detail" in data
-    assert "message" in data["detail"]
-    assert "Unable to read this file" in data["detail"]["message"]
+    assert data["processing_status"] == "failed"
+    assert "Unable to read this file" in data["error_message"]

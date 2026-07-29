@@ -8,12 +8,13 @@ from app.api.routes.analytics import router as analytics_router
 from app.api.routes.health import router as health_router
 from app.api.routes.receipts import router as receipts_router
 from app.core.config import settings
-from app.db.database import Base, engine
+from app.db.database import Base, engine, run_lightweight_migrations
 from app.models.receipt import (
     Receipt,  # noqa: F401 -- registers the model with Base.metadata before create_all()
 )
 
 Base.metadata.create_all(bind=engine)
+run_lightweight_migrations()
 
 UPLOAD_DIR = Path("uploads")
 UPLOAD_DIR.mkdir(parents=True, exist_ok=True)

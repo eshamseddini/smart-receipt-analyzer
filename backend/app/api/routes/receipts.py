@@ -1,12 +1,12 @@
 import logging
 
-from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
+from fastapi import APIRouter, BackgroundTasks, Depends, File, HTTPException, UploadFile
 from sqlalchemy.orm import Session
 
 from app.db.database import get_db
 from app.repositories.receipt_repository import (
     count_receipts,
-    create_receipt,
+    create_pending_receipt,
     delete_receipt,
     get_receipt_by_id,
     get_receipts,
@@ -18,16 +18,12 @@ from app.schemas.receipt_schema import (
     ReceiptDetail,
     UpdateReceiptStructuredDataRequest,
 )
-from app.schemas.upload_schema import UploadReceiptResponse
+from app.schemas.upload_schema import UploadAcceptedResponse
 from app.services.business_validation_service import validate_extracted_data
-from app.services.classification_service import classify_document
-from app.services.extraction_service import (
-    calculate_category_totals_from_items,
-    extract_structured_data,
-)
+from app.services.extraction_service import calculate_category_totals_from_items
 from app.services.file_service import delete_local_file, save_uploaded_file
 from app.services.integrations_service import send_receipt_webhook
-from app.services.ocr.ocr_service import extract_text_from_file
+from app.services.receipt_processing_service import process_receipt_upload
 from app.services.validation_service import validate_file_size, validate_uploaded_file
 
 logger = logging.getLogger(__name__)
@@ -35,71 +31,41 @@ logger = logging.getLogger(__name__)
 router = APIRouter()
 
 
-@router.post("/upload", response_model=UploadReceiptResponse)
+@router.post("/upload", response_model=UploadAcceptedResponse, status_code=202)
 async def upload_receipt(
-    file: UploadFile = File(...), db: Session = Depends(get_db)
-) -> UploadReceiptResponse:
+    background_tasks: BackgroundTasks,
+    file: UploadFile = File(...),
+    db: Session = Depends(get_db),
+) -> UploadAcceptedResponse:
+    """
+    Validates and saves the file, then returns immediately with a "pending"
+    status. OCR/extraction/validation run in the background — poll
+    GET /api/receipts/{receipt_id} to get the final result.
+
+    Processing is not done inline because OCR is CPU-heavy: on constrained
+    hosting (e.g. a free-tier instance) it can take far longer than a
+    reverse proxy's gateway timeout, which would otherwise turn a slow but
+    successful upload into a client-facing 502/504.
+    """
     validate_uploaded_file(file)
     contents = await file.read()
     validate_file_size(contents)
     dest_path = save_uploaded_file(file, contents)
 
-    try:
-        extracted_text = extract_text_from_file(dest_path)
-    except Exception as error:
-        logger.warning("OCR failed to read uploaded file %s: %s", dest_path, error)
-        raise HTTPException(
-            status_code=422,
-            detail={
-                "message": "Unable to read this file. It may be corrupted or not a valid image/PDF.",
-                "filename": file.filename,
-            },
-        ) from error
-
-    document_type = classify_document(extracted_text)
-    try:
-        structured_data = extract_structured_data(extracted_text, document_type)
-    except ValueError as error:
-        raise HTTPException(
-            status_code=422,
-            detail={
-                "message": str(error),
-                "filename": file.filename,
-                "document_type": document_type,
-                "extracted_text_preview": extracted_text[:500],
-            },
-        ) from error
-
-    validation_result = validate_extracted_data(structured_data)
-    created_receipt = create_receipt(
+    created_receipt = create_pending_receipt(
         db=db,
         original_filename=file.filename,
         content_type=file.content_type,
         saved_path=dest_path,
-        extracted_text=extracted_text,
-        document_type=document_type,
-        structured_data=structured_data.model_dump(),
-        validation_result=validation_result.model_dump(),
     )
 
-    await send_receipt_webhook(
-        event="receipt.processed",
-        receipt_id=created_receipt.id,
-        document_type=document_type,
-        structured_data=structured_data,
-        validation_result=validation_result,
-    )
+    background_tasks.add_task(process_receipt_upload, created_receipt.id, dest_path)
 
-    return UploadReceiptResponse(
+    return UploadAcceptedResponse(
         receipt_id=created_receipt.id,
         filename=file.filename,
-        content_type=file.content_type,
-        saved_path=dest_path,
-        extracted_text=extracted_text,
-        document_type=document_type,
-        structured_data=structured_data,
-        validation_result=validation_result,
-        message="File uploaded, processed, structured, validated and saved successfully.",
+        processing_status=created_receipt.processing_status,
+        message="File uploaded successfully. Processing in the background.",
     )
 
 

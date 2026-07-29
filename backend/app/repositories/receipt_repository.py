@@ -3,27 +3,21 @@ from sqlalchemy.orm import Session
 from app.models.receipt import Receipt
 
 
-def create_receipt(
+def create_pending_receipt(
     db: Session,
     original_filename: str,
     content_type: str,
     saved_path: str,
-    extracted_text: str,
-    document_type: str,
-    structured_data: dict,
-    validation_result: dict,
 ) -> Receipt:
     """
-    Create a new receipt in the database.
+    Create a receipt row immediately after upload, before OCR/extraction has
+    run. The background task fills in the rest once processing completes.
     """
     db_receipt = Receipt(
         original_filename=original_filename,
         content_type=content_type,
         saved_path=saved_path,
-        extracted_text=extracted_text,
-        document_type=document_type,
-        structured_data=structured_data,
-        validation_result=validation_result,
+        processing_status="pending",
     )
 
     db.add(db_receipt)
@@ -31,6 +25,59 @@ def create_receipt(
     db.refresh(db_receipt)
 
     return db_receipt
+
+
+def finalize_receipt_processing(
+    db: Session,
+    receipt_id: int,
+    extracted_text: str,
+    document_type: str,
+    structured_data: dict,
+    validation_result: dict,
+) -> Receipt | None:
+    """
+    Fill in a pending receipt with its OCR/extraction results once the
+    background processing task completes successfully.
+    """
+    receipt = get_receipt_by_id(db, receipt_id)
+
+    if not receipt:
+        return None
+
+    receipt.extracted_text = extracted_text
+    receipt.document_type = document_type
+    receipt.structured_data = structured_data
+    receipt.validation_result = validation_result
+    receipt.processing_status = "completed"
+    receipt.error_message = None
+
+    db.commit()
+    db.refresh(receipt)
+
+    return receipt
+
+
+def mark_receipt_processing_failed(
+    db: Session,
+    receipt_id: int,
+    error_message: str,
+) -> Receipt | None:
+    """
+    Record that background processing failed (unsupported merchant,
+    corrupted file, ...) so the frontend can show the error to the user.
+    """
+    receipt = get_receipt_by_id(db, receipt_id)
+
+    if not receipt:
+        return None
+
+    receipt.processing_status = "failed"
+    receipt.error_message = error_message
+
+    db.commit()
+    db.refresh(receipt)
+
+    return receipt
 
 
 def get_receipts(db: Session, skip: int = 0, limit: int = 50):
